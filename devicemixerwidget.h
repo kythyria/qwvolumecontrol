@@ -24,7 +24,9 @@ public:
     
 signals:
     
-public slots:
+private slots:
+    void refresh();
+    void masterSliderChanged(int val);
 };
 
 #endif // DEVICEMIXERWIDGET_H

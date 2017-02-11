@@ -13,6 +13,7 @@
 #include <endpointvolume.h>
 
 #include "util.h"
+#include "devicevolumemodel.h"
 
 _COM_SMARTPTR_TYPEDEF(IPropertyStore, __uuidof(IPropertyStore));
 _COM_SMARTPTR_TYPEDEF(IAudioEndpointVolume, __uuidof(IAudioEndpointVolume));
@@ -21,6 +22,7 @@ class DeviceMixerWidget::Internals {
 public:
     IMMDevicePtr device;
     IAudioEndpointVolumePtr volume;
+    DeviceVolumeModel *dvm;
     
     QVBoxLayout *vbox;
     QHBoxLayout *headerLayout;
@@ -54,14 +56,18 @@ DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWi
     DWORD state;
     HRESULT hr = device->GetState(&state);
     
-    IID IID_IAudioEndpointVolume = __uuidof(IAudioEndpointVolume);
+    stuff->dvm = nullptr;
     
     if(SUCCEEDED(hr) && state == DEVICE_STATE_ACTIVE) {
         IAudioEndpointVolume **paev = &(stuff->volume);
-        HRESULT hr = device->Activate(IID_IAudioEndpointVolume, CLSCTX_ALL, NULL, (void**)paev);
+        HRESULT hr = device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)paev);
         AlertHresult(hr, QString("Unable to open the volume control for %0 (%1)").arg(stuff->lblDeviceName->text()));
         
+        stuff->dvm = new DeviceVolumeModel(stuff->volume, this);
         stuff->createMasterSlider();
+        
+        connect(stuff->dvm, &DeviceVolumeModel::changed, this, &DeviceMixerWidget::refresh);
+        connect(stuff->masterSlider, &QSlider::valueChanged, this, &DeviceMixerWidget::masterSliderChanged);
     }
     
     this->setLayout(stuff->vbox);
@@ -131,9 +137,20 @@ void DeviceMixerWidget::Internals::createMasterSlider() {
     masterSlider->setOrientation(Qt::Horizontal);
     
     float vol = 0.0f;
-    HRESULT hr = volume->GetMasterVolumeLevelScalar(&vol);
+    volume->GetMasterVolumeLevelScalar(&vol);
     masterSlider->setValue(roundf(vol*100.0f));
     
     masterSliderLayout->addWidget(masterSlider);
     vbox->addLayout(masterSliderLayout);
+}
+
+void DeviceMixerWidget::refresh() {
+    float vol = 0.0f;
+    stuff->volume->GetMasterVolumeLevelScalar(&vol);
+    stuff->masterSlider->setValue(roundf(vol*100.0f));
+}
+
+void DeviceMixerWidget::masterSliderChanged(int val) {
+    float vol = val / 100.0f;
+    stuff->dvm->setVolume(vol);
 }
