@@ -17,6 +17,22 @@ class DeviceVolumeModel : public AbstractVolumeModel
 public:
     explicit DeviceVolumeModel(IAudioEndpointVolumePtr vol, QObject *parent = 0);
     virtual ~DeviceVolumeModel();
+    
+    virtual uint channelCount();
+    virtual float channelVolume(uint channel);
+    virtual void setChannelVolume(uint channel, float volume);
+    
+    virtual bool hasDecibels();
+    virtual float decibelsMin();
+    virtual float decibelsMax();
+    virtual float decibels();
+    virtual void setDecibels(float dbVolume);
+    
+    virtual float volume();
+    virtual void setVolume(float volume);
+    
+    virtual bool muted();
+    virtual void setMuted(bool muted);
 };
 
 #endif // DEVICEVOLUMEMODEL_H

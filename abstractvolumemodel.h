@@ -10,20 +10,24 @@ public:
     explicit AbstractVolumeModel(QObject *parent = 0);
     virtual ~AbstractVolumeModel();
     
-    virtual int channelCount() = 0;
-    virtual float channelVolume(int channel) = 0;
-    virtual void setChannelVolume(int channel, float volume) = 0;
+    virtual uint channelCount() = 0;
+    virtual float channelVolume(uint channel) = 0;
+    virtual void setChannelVolume(uint channel, float volume) = 0;
     
-    virtual bool hasDecibels() = 0;
-    virtual float decibelsMin() = 0;
-    virtual float decibelsMax() = 0;
-    virtual void setDecibels(float dbVolume) = 0;
+    virtual bool hasDecibels();
+    virtual float decibelsMin();
+    virtual float decibelsMax();
+    virtual float decibels();
+    virtual void setDecibels(float dbVolume);
     
-    virtual float masterVolume() = 0;
-    virtual void setMasterVolume(float volume) = 0;
+    virtual float volume() = 0;
+    virtual void setVolume(float volume) = 0;
+    
+    virtual bool muted() = 0;
+    virtual void setMuted(bool muted) = 0;
     
 signals:
-    void volumeChanged();
+    void changed();
     
 public slots:
 };

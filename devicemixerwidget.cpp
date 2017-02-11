@@ -1,19 +1,26 @@
 #include "devicemixerwidget.h"
 
+#include "math.h"
+
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QFrame>
 #include <QPushButton>
 #include <QLabel>
+#include <QSlider>
+
 #include <Functiondiscoverykeys_devpkey.h>
+#include <endpointvolume.h>
 
 #include "util.h"
 
 _COM_SMARTPTR_TYPEDEF(IPropertyStore, __uuidof(IPropertyStore));
+_COM_SMARTPTR_TYPEDEF(IAudioEndpointVolume, __uuidof(IAudioEndpointVolume));
 
 class DeviceMixerWidget::Internals {
 public:
     IMMDevicePtr device;
+    IAudioEndpointVolumePtr volume;
     
     QVBoxLayout *vbox;
     QHBoxLayout *headerLayout;
@@ -27,12 +34,75 @@ public:
     
     QPushButton *btnMute;
     QPushButton *btnLinkChannels;
+    
+    QHBoxLayout *masterSliderLayout;
+    QSlider *masterSlider;
+    QLabel *masterSliderText;
+    
+    void InitHeaderWidgets();
+    void PopulateHeaderWidgets();
+    void createMasterSlider();
 };
 
 DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWidget(parent) {
     stuff = new Internals();
     stuff->device = device;
     
+    stuff->InitHeaderWidgets();
+    stuff->PopulateHeaderWidgets();
+    
+    DWORD state;
+    HRESULT hr = device->GetState(&state);
+    
+    IID IID_IAudioEndpointVolume = __uuidof(IAudioEndpointVolume);
+    
+    if(SUCCEEDED(hr) && state == DEVICE_STATE_ACTIVE) {
+        IAudioEndpointVolume **paev = &(stuff->volume);
+        HRESULT hr = device->Activate(IID_IAudioEndpointVolume, CLSCTX_ALL, NULL, (void**)paev);
+        AlertHresult(hr, QString("Unable to open the volume control for %0 (%1)").arg(stuff->lblDeviceName->text()));
+        
+        stuff->createMasterSlider();
+    }
+    
+    this->setLayout(stuff->vbox);
+}
+
+DeviceMixerWidget::~DeviceMixerWidget() {
+    delete stuff;
+}
+
+void DeviceMixerWidget::Internals::InitHeaderWidgets() {
+    lblDeviceDesc = new QLabel("Device Description");
+    lblDeviceName = new QLabel("Device Name");
+    lblStatus = new QLabel("Status");
+    
+    headerTextLayout = new QVBoxLayout();
+    headerTextLayout->addWidget(lblDeviceDesc);
+    headerTextLayout->addWidget(lblDeviceName);
+    headerTextLayout->addWidget(lblStatus);
+    
+    QFrame *iconWidgetFrame = new QFrame();
+    iconWidgetFrame->setFrameStyle(QFrame::Box);
+    iconWidgetFrame->setBackgroundRole(QPalette::Text);
+    iconWidgetFrame->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    iconWidgetFrame->setMinimumSize(48,48);
+    iconWidgetFrame->resize(48,48);
+    iconWidget = iconWidgetFrame;
+    
+    btnMute = new QPushButton();
+    btnLinkChannels = new QPushButton();
+    
+    headerLayout = new QHBoxLayout();
+    headerLayout->addWidget(iconWidget);
+    headerLayout->addLayout(headerTextLayout, 1);
+    headerLayout->addWidget(btnMute, 0, Qt::AlignTop);
+    headerLayout->addWidget(btnLinkChannels, 0, Qt::AlignTop);
+    
+    vbox = new QVBoxLayout();
+    vbox->addLayout(headerLayout);
+}
+
+void DeviceMixerWidget::Internals::PopulateHeaderWidgets() {
     IPropertyStorePtr props;
     HRESULT hr;
     hr = device->OpenPropertyStore(STGM_READ, &props);
@@ -41,48 +111,29 @@ DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWi
     
     PROPVARIANT pv;
     
-    stuff->lblDeviceDesc = new QLabel();
     hr = props->GetValue(PKEY_Device_DeviceDesc, &pv);
     assertHR(hr, "Couldn't get device description (%0)");
-    stuff->lblDeviceDesc->setText(QString::fromWCharArray(pv.pwszVal));
+    lblDeviceDesc->setText(QString::fromWCharArray(pv.pwszVal));
     PropVariantClear(&pv);
     
-    stuff->lblDeviceName = new QLabel();
     hr = props->GetValue(PKEY_DeviceInterface_FriendlyName, &pv);
-    assertHR(hr, QString("Couldn't get device friendly name for %0 (%1)").arg(stuff->lblDeviceDesc->text()));
-    stuff->lblDeviceName->setText(QString::fromWCharArray(pv.pwszVal));
+    assertHR(hr, QString("Couldn't get device friendly name for %0 (%1)").arg(lblDeviceDesc->text()));
+    lblDeviceName->setText(QString::fromWCharArray(pv.pwszVal));
     PropVariantClear(&pv);
-    
-    stuff->lblStatus = new QLabel("Status");
-    
-    stuff->headerTextLayout = new QVBoxLayout();
-    stuff->headerTextLayout->addWidget(stuff->lblDeviceDesc);
-    stuff->headerTextLayout->addWidget(stuff->lblDeviceName);
-    stuff->headerTextLayout->addWidget(stuff->lblStatus);
-    
-    QFrame *iconWidget = new QFrame();
-    iconWidget->setFrameStyle(QFrame::Box);
-    iconWidget->setBackgroundRole(QPalette::Text);
-    iconWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    iconWidget->setMinimumSize(48,48);
-    iconWidget->resize(48,48);
-    stuff->iconWidget = iconWidget;
-    
-    stuff->btnMute = new QPushButton();
-    stuff->btnLinkChannels = new QPushButton();
-    
-    stuff->headerLayout = new QHBoxLayout();
-    stuff->headerLayout->addWidget(stuff->iconWidget);
-    stuff->headerLayout->addLayout(stuff->headerTextLayout, 1);
-    stuff->headerLayout->addWidget(stuff->btnMute, 0, Qt::AlignTop);
-    stuff->headerLayout->addWidget(stuff->btnLinkChannels, 0, Qt::AlignTop);
-    
-    stuff->vbox = new QVBoxLayout();
-    stuff->vbox->addLayout(stuff->headerLayout);
-    
-    this->setLayout(stuff->vbox);
 }
 
-DeviceMixerWidget::~DeviceMixerWidget() {
-    delete stuff;
+void DeviceMixerWidget::Internals::createMasterSlider() {
+    masterSliderLayout = new QHBoxLayout();
+    
+    masterSlider = new QSlider();
+    masterSlider->setMinimum(0);
+    masterSlider->setMaximum(100);
+    masterSlider->setOrientation(Qt::Horizontal);
+    
+    float vol = 0.0f;
+    HRESULT hr = volume->GetMasterVolumeLevelScalar(&vol);
+    masterSlider->setValue(roundf(vol*100.0f));
+    
+    masterSliderLayout->addWidget(masterSlider);
+    vbox->addLayout(masterSliderLayout);
 }
