@@ -33,6 +33,7 @@ HEADERS += \
 
 DISTFILES += \
     .astylerc \
-    appstyle.qss
+    appstyle.qss \
+    README.md
 
 FORMS +=
