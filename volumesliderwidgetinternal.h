@@ -16,6 +16,8 @@ class VolumeSliderWidget::Internal : public QObject
 {
     Q_OBJECT
     
+    friend class VolumeSliderWidget;
+    
     AbstractVolumeModel *model;
     
     class SliderRow {

@@ -14,6 +14,7 @@
 
 #include "util.h"
 #include "devicevolumemodel.h"
+#include "volumesliderwidget.h"
 
 _COM_SMARTPTR_TYPEDEF(IPropertyStore, __uuidof(IPropertyStore));
 _COM_SMARTPTR_TYPEDEF(IAudioEndpointVolume, __uuidof(IAudioEndpointVolume));
@@ -41,6 +42,8 @@ public:
     QSlider *masterSlider;
     QLabel *masterSliderText;
     
+    VolumeSliderWidget *sliders;
+    
     void InitHeaderWidgets();
     void PopulateHeaderWidgets();
     void createMasterSlider();
@@ -65,6 +68,9 @@ DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWi
         
         stuff->dvm = new DeviceVolumeModel(stuff->device, this);
         stuff->createMasterSlider();
+        
+        stuff->sliders = new VolumeSliderWidget(stuff->dvm);
+        stuff->vbox->addWidget(stuff->sliders);
         
         connect(stuff->dvm, &DeviceVolumeModel::changed, this, &DeviceMixerWidget::refresh);
         connect(stuff->masterSlider, &QSlider::valueChanged, this, &DeviceMixerWidget::masterSliderChanged);

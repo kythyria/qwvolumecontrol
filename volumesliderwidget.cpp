@@ -8,4 +8,28 @@
 
 #include "abstractvolumemodel.h"
 
+#include "volumesliderwidgetinternal.h"
 
+VolumeSliderWidget::VolumeSliderWidget(AbstractVolumeModel *model, QWidget *parent) : QWidget(parent) {
+    stuff = new Internal(model, this);
+}
+
+VolumeSliderWidget::~VolumeSliderWidget() {
+    delete stuff;
+}
+
+AbstractVolumeModel* VolumeSliderWidget::volumeModel() {
+    return stuff->model;
+}
+
+void VolumeSliderWidget::linkChannels(bool linked) {
+    stuff->linkChannels(linked);
+}
+
+void VolumeSliderWidget::hideChannels(bool hidden) {
+    stuff->hideChannels(hidden);
+}
+
+void VolumeSliderWidget::setMasterVisible(bool visible) {
+    stuff->setMasterVisible(visible);
+}
