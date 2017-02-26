@@ -1,10 +1,19 @@
 #include "devicevolumemodel.h"
+#include "util.h"
+#include <functiondiscoverykeys.h>
+
+#include <QtDebug>
+
+_COM_SMARTPTR_TYPEDEF(IAudioEndpointVolume, __uuidof(IAudioEndpointVolume));
+_COM_SMARTPTR_TYPEDEF(IPropertyStore, __uuidof(IPropertyStore));
+
 
 class DeviceVolumeModel::Internal : public IAudioEndpointVolumeCallback {
     DeviceVolumeModel *owner;
     ULONG refcount;
     
 public:
+    uint channelMask;
     IAudioEndpointVolumePtr vol;
     
     DeviceVolumeModel::Internal(DeviceVolumeModel *owner, IAudioEndpointVolumePtr vol);
@@ -19,10 +28,31 @@ public:
     
 };
 
-DeviceVolumeModel::DeviceVolumeModel(IAudioEndpointVolumePtr vol, QObject *parent) : AbstractVolumeModel(parent)
+DeviceVolumeModel::DeviceVolumeModel(IMMDevicePtr device, QObject *parent) : AbstractVolumeModel(parent)
 {
+    IAudioEndpointVolumePtr vol;
+    IAudioEndpointVolume **paev = &(vol);
+    HRESULT hr = device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)paev);
+    AlertHresult(hr, QString("Unable to open the volume control (%1)"));
+    
     stuff = new Internal(this, vol);
+    
+    IPropertyStorePtr props;
+     hr = device->OpenPropertyStore(STGM_READ, &props);
+    assertHR(hr, "Couldn't open device property store (%0)");
+    
+    PROPVARIANT pv;
+    hr = props->GetValue(PKEY_AudioEndpoint_PhysicalSpeakers, &pv);
+    AlertHresult(hr, QString("Couldn't get channel configuration mask (%0)"));
+    stuff->channelMask = pv.uintVal;
+    PropVariantClear(&pv);
+    
     vol->RegisterControlChangeNotify((IAudioEndpointVolumeCallback*)stuff);
+    
+    qDebug() << "Device channels: " << this->channelLayoutMask();
+    for(uint i = 0; i < this->channelCount(); i++) {
+        qDebug() << "    " << this->channelName(i);
+    }
 }
 
 DeviceVolumeModel::~DeviceVolumeModel() {
@@ -73,6 +103,10 @@ uint DeviceVolumeModel::channelCount() {
     uint count;
     HRESULT hr = stuff->vol->GetChannelCount(&count);
     return SUCCEEDED(hr) ? count : 0;
+}
+
+uint DeviceVolumeModel::channelLayoutMask() {
+    return stuff->channelMask;
 }
 
 float DeviceVolumeModel::channelVolume(uint channel) {

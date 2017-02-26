@@ -11,6 +11,8 @@ public:
     virtual ~AbstractVolumeModel();
     
     virtual uint channelCount() = 0;
+    virtual uint channelLayoutMask() = 0;
+    virtual QString channelName(uint channel);
     virtual float channelVolume(uint channel) = 0;
     virtual void setChannelVolume(uint channel, float volume) = 0;
     

@@ -2,11 +2,13 @@
 #define DEVICEVOLUMEMODEL_H
 
 #include "abstractvolumemodel.h"
+#include <mmdeviceapi.h>
 #include <comip.h>
 #include <comdef.h>
 #include <endpointvolume.h>
 
-_COM_SMARTPTR_TYPEDEF(IAudioEndpointVolume, __uuidof(IAudioEndpointVolume));
+_COM_SMARTPTR_TYPEDEF(IMMDevice, __uuidof(IMMDevice));
+
 
 class DeviceVolumeModel : public AbstractVolumeModel
 {
@@ -15,10 +17,11 @@ class DeviceVolumeModel : public AbstractVolumeModel
     Internal *stuff;
     
 public:
-    explicit DeviceVolumeModel(IAudioEndpointVolumePtr vol, QObject *parent = 0);
+    explicit DeviceVolumeModel(IMMDevicePtr device, QObject *parent = 0);
     virtual ~DeviceVolumeModel();
     
     virtual uint channelCount();
+    virtual uint channelLayoutMask();
     virtual float channelVolume(uint channel);
     virtual void setChannelVolume(uint channel, float volume);
     

@@ -63,7 +63,7 @@ DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWi
         HRESULT hr = device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)paev);
         AlertHresult(hr, QString("Unable to open the volume control for %0 (%1)").arg(stuff->lblDeviceName->text()));
         
-        stuff->dvm = new DeviceVolumeModel(stuff->volume, this);
+        stuff->dvm = new DeviceVolumeModel(stuff->device, this);
         stuff->createMasterSlider();
         
         connect(stuff->dvm, &DeviceVolumeModel::changed, this, &DeviceMixerWidget::refresh);
@@ -79,7 +79,7 @@ DeviceMixerWidget::~DeviceMixerWidget() {
 
 void DeviceMixerWidget::Internals::InitHeaderWidgets() {
     lblDeviceDesc = new QLabel("Device Description");
-    lblDeviceName = new QLabel("Device Name");
+    lblDeviceName = new QLabel("(Unknown Device)");
     lblStatus = new QLabel("Status");
     
     headerTextLayout = new QVBoxLayout();
@@ -123,8 +123,10 @@ void DeviceMixerWidget::Internals::PopulateHeaderWidgets() {
     PropVariantClear(&pv);
     
     hr = props->GetValue(PKEY_DeviceInterface_FriendlyName, &pv);
-    assertHR(hr, QString("Couldn't get device friendly name for %0 (%1)").arg(lblDeviceDesc->text()));
-    lblDeviceName->setText(QString::fromWCharArray(pv.pwszVal));
+    //if(AlertHresult(hr, QString("Couldn't get device friendly name for %0 (%1)").arg(lblDeviceDesc->text()))) {
+    if(SUCCEEDED(hr)) {
+        lblDeviceName->setText(QString::fromWCharArray(pv.pwszVal));
+    }
     PropVariantClear(&pv);
 }
 
@@ -145,8 +147,7 @@ void DeviceMixerWidget::Internals::createMasterSlider() {
 }
 
 void DeviceMixerWidget::refresh() {
-    float vol = 0.0f;
-    stuff->volume->GetMasterVolumeLevelScalar(&vol);
+    float vol = stuff->dvm->volume();
     stuff->masterSlider->setValue(roundf(vol*100.0f));
 }
 
