@@ -41,6 +41,7 @@ DeviceVolumeModel::DeviceVolumeModel(IMMDevicePtr device, QObject *parent) : Abs
      hr = device->OpenPropertyStore(STGM_READ, &props);
     assertHR(hr, "Couldn't open device property store (%0)");
     
+    // FIXME: Why does this return zero successfully?
     PROPVARIANT pv;
     hr = props->GetValue(PKEY_AudioEndpoint_PhysicalSpeakers, &pv);
     AlertHresult(hr, QString("Couldn't get channel configuration mask (%0)"));

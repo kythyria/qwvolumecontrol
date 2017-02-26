@@ -9,7 +9,9 @@ SOURCES += main.cpp \
     util.cpp \
     geticonfromresource.cpp \
     abstractvolumemodel.cpp \
-    devicevolumemodel.cpp
+    devicevolumemodel.cpp \
+    volumesliderwidget.cpp \
+    volumesliderwidgetinternal.cpp
 
 RESOURCES += \
     resources.qrc
@@ -29,7 +31,9 @@ HEADERS += \
     util.h \
     geticonfromresource.h \
     abstractvolumemodel.h \
-    devicevolumemodel.h
+    devicevolumemodel.h \
+    volumesliderwidget.h \
+    volumesliderwidgetinternal.h
 
 DISTFILES += \
     .astylerc \
