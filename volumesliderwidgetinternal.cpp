@@ -80,14 +80,13 @@ void VolumeSliderWidget::Internal::setMasterVisible(bool visible) {
 }
 
 void VolumeSliderWidget::Internal::sliderMoved(int channel) {
+    auto sr = rows[channel + 1];
+    float vol = sr->value();
+    
     if(channel == -1) {
-        auto sr = rows[0];
-        float vol = sr->value();
         model->setVolume(vol);
     }
     else {
-        auto sr = rows[channel + 1];
-        float vol = sr->value();
         model->setChannelVolume(channel, vol);
     }
 }
@@ -99,7 +98,7 @@ void VolumeSliderWidget::Internal::modelUpdated() {
     
     for(int i = 1; i < rows.length(); i++) {
         sr = rows[i];
-        vol = model->channelVolume(i);
+        vol = model->channelVolume(i-1);
         sr->setValue(vol);
     }
 }
