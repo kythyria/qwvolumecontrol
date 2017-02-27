@@ -38,6 +38,8 @@ void VolumeSliderWidget::Internal::setVolumeModel(AbstractVolumeModel *model) {
     
     this->model = model;
     initChannels();
+    modelUpdated();
+    
     connect(this->model, SIGNAL(changed()), this, SLOT(modelUpdated()));
 }
 
