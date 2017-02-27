@@ -156,7 +156,8 @@ float DeviceVolumeModel::volume() {
 }
 
 void DeviceVolumeModel::setVolume(float volume) {
-    stuff->vol->SetMasterVolumeLevelScalar(volume, NULL);
+    HRESULT hr = stuff->vol->SetMasterVolumeLevelScalar(volume, NULL);
+    (void)hr;
 }
 
 bool DeviceVolumeModel::muted() {

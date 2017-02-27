@@ -8,3 +8,7 @@ Windows' sound system doesn't work quite the same way.
 
 To build, you need Qt 5.7ish, the Windows SDK, and MSVC 2015. It uses the smart
 pointer library that MSVC supplies as comsupw.lib, so I doubt MinGW will work.
+
+Beware: You will not get meaningful channel names until you've gone through the
+wizard in the Windows audio settings (the one under "Configure"). Until this is
+done, that information is extremely hard to extract.

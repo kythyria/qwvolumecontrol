@@ -47,7 +47,7 @@ void VolumeSliderWidget::Internal::initChannels() {
     rows.append(new SliderRow(QString(), grid, 0)); // Master
     int cc = model->channelCount();
     for(int i = 0; i < cc; i++) {
-        auto sr = new SliderRow(model->channelName(i), grid, i);
+        auto sr = new SliderRow(model->channelName(i), grid, i+1);
         rows.append(sr);
     }
     
@@ -106,7 +106,6 @@ void VolumeSliderWidget::Internal::modelUpdated() {
 }
 
 VolumeSliderWidget::Internal::SliderRow::SliderRow(QString name, QGridLayout *grid, int row) {
-    lblName = new QLabel(name);
     lblValue = new QLabel("0 %");
     
     slider = new QSlider();
@@ -115,8 +114,14 @@ VolumeSliderWidget::Internal::SliderRow::SliderRow(QString name, QGridLayout *gr
     slider->setOrientation(Qt::Horizontal);
     
     this->grid = grid;
-    grid->addWidget(lblName, row, 0);
-    grid->addWidget(slider, row, 1);
+    if(name.length() > 0) {
+        lblName = new QLabel(name);
+        grid->addWidget(lblName, row, 0);
+        grid->addWidget(slider, row, 1);
+    }
+    else {
+        grid->addWidget(slider, row, 0, 1, 2);
+    }
     grid->addWidget(lblValue, row, 2);
 }
 
