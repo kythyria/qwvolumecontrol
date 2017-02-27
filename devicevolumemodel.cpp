@@ -1,8 +1,10 @@
 #include "devicevolumemodel.h"
 #include "util.h"
-#include <functiondiscoverykeys.h>
+#include "speakerformats.h"
 
+#include <functiondiscoverykeys.h>
 #include <QtDebug>
+#include <windows.h>
 
 _COM_SMARTPTR_TYPEDEF(IAudioEndpointVolume, __uuidof(IAudioEndpointVolume));
 _COM_SMARTPTR_TYPEDEF(IPropertyStore, __uuidof(IPropertyStore));
@@ -38,13 +40,14 @@ DeviceVolumeModel::DeviceVolumeModel(IMMDevicePtr device, QObject *parent) : Abs
     stuff = new Internal(this, vol);
     
     IPropertyStorePtr props;
-     hr = device->OpenPropertyStore(STGM_READ, &props);
+    hr = device->OpenPropertyStore(STGM_READ, &props);
     assertHR(hr, "Couldn't open device property store (%0)");
     
-    // FIXME: Why does this return zero successfully?
     PROPVARIANT pv;
+    
+    // Okay, so IPropertyStore succeeds but pv.vt == VT_EMPTY if the property doesn't exist.
+    // FIXME: Deduce the channel names if the user hasn't configured it.
     hr = props->GetValue(PKEY_AudioEndpoint_PhysicalSpeakers, &pv);
-    AlertHresult(hr, QString("Couldn't get channel configuration mask (%0)"));
     stuff->channelMask = pv.uintVal;
     PropVariantClear(&pv);
     

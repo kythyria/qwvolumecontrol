@@ -33,7 +33,8 @@ HEADERS += \
     abstractvolumemodel.h \
     devicevolumemodel.h \
     volumesliderwidget.h \
-    volumesliderwidgetinternal.h
+    volumesliderwidgetinternal.h \
+    speakerformats.h
 
 DISTFILES += \
     .astylerc \

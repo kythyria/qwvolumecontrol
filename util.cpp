@@ -5,7 +5,7 @@ bool AlertHresult(long hr, QString failmessage) {
     if(FAILED(hr)) {
         QString failmsg = failmessage.arg(hr);
         auto msgdata = (wchar_t*)failmsg.utf16();
-        MessageBox(NULL, msgdata, L"Volume Control", MB_OK);
+        MessageBox(NULL, msgdata, L"Volume Control", MB_OK | MB_ICONERROR);
         return false;
     }
     
