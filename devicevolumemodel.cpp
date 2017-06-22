@@ -51,6 +51,23 @@ DeviceVolumeModel::DeviceVolumeModel(IMMDevicePtr device, QObject *parent) : Abs
     stuff->channelMask = pv.uintVal;
     PropVariantClear(&pv);
     
+    // HACK: This is a *shameless* heuristic. In the event that the user hasn't explicitly
+    // configured what kind of speakers are connected to that endpoint, we can guess in at
+    // least two cases what sort of names to use.
+    
+    if(stuff->channelMask == 0 && this->channelCount() > 0) {
+        switch(this->channelCount()) {
+        case 1:
+            stuff->channelMask = KSAUDIO_SPEAKER_MONO;
+            break;
+        case 2:
+            stuff->channelMask = KSAUDIO_SPEAKER_STEREO;
+            break;
+        default:
+            qDebug() << "Couldn't guess the channel names.";
+        }
+    }
+    
     vol->RegisterControlChangeNotify((IAudioEndpointVolumeCallback*)stuff);
     
     qDebug() << "Device channels: " << this->channelLayoutMask();

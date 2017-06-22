@@ -25,8 +25,7 @@ QString channelNames[] = {
     QString("Top Front Right"),
     QString("Top Back Left"),
     QString("Top Back Center"),
-    QString("Top Back Right"),
-    QString("Ch. %0")
+    QString("Top Back Right")
 };
 
 struct nameTabEntry {
@@ -54,6 +53,15 @@ QString AbstractVolumeModel::channelName(uint channel) {
         return channel == 0 ? QString("Mono") : QString("Ch. %0").arg(channel);
     }
     
+    if (lm == KSAUDIO_SPEAKER_STEREO) {
+        switch(channel) {
+        case 0:
+            return QString("Left");
+        case 1:
+            return QString("Right");
+        }
+    }
+    
     int chindex = -1;
     uint i;
     for (i = 0; i < 31; i++) {
@@ -64,7 +72,7 @@ QString AbstractVolumeModel::channelName(uint channel) {
         }
     }
     
-    return channelNames[i].arg(channel);
+    return channelNames[i];
 }
 
 bool AbstractVolumeModel::hasDecibels() {
