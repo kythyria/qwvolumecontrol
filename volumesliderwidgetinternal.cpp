@@ -72,6 +72,8 @@ void VolumeSliderWidget::Internal::destroyChannels() {
 
 void VolumeSliderWidget::Internal::linkChannels(bool linked) {
     this->linked = linked;
+    this->setMasterVisible(linked);
+    this->hideChannels(linked);
 }
 
 void VolumeSliderWidget::Internal::hideChannels(bool hidden) {
@@ -116,6 +118,7 @@ VolumeSliderWidget::Internal::SliderRow::SliderRow(QString name, QGridLayout *gr
     // Set the proper width for the numeric readout.
     int valuewidth = lblValue->fontMetrics().width(formatPercentage(1.0f));
     lblValue->setMinimumWidth(valuewidth);
+    lblValue->setMaximumWidth(valuewidth);
     lblValue->setAlignment(Qt::AlignRight|Qt::AlignCenter);
     
     slider = new QSlider();
@@ -130,6 +133,7 @@ VolumeSliderWidget::Internal::SliderRow::SliderRow(QString name, QGridLayout *gr
         grid->addWidget(slider, row, 1);
     }
     else {
+        lblName = nullptr;
         grid->addWidget(slider, row, 0, 1, 2);
     }
     grid->addWidget(lblValue, row, 2);
@@ -142,7 +146,7 @@ QString VolumeSliderWidget::Internal::SliderRow::formatPercentage(float factor) 
 }
 
 void VolumeSliderWidget::Internal::SliderRow::setVisible(bool visible) {
-    lblName->setVisible(visible);
+    if(lblName) { lblName->setVisible(visible); }
     lblValue->setVisible(visible);
     slider->setVisible(visible);
 }

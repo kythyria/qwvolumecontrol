@@ -65,6 +65,8 @@ DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWi
         
         stuff->sliders = new VolumeSliderWidget(stuff->dvm);
         stuff->vbox->addWidget(stuff->sliders);
+        connect(stuff->btnLinkChannels, &QPushButton::toggled, stuff->sliders, &VolumeSliderWidget::linkChannels);
+        stuff->btnLinkChannels->setChecked(true);
         
         connect(stuff->dvm, &DeviceVolumeModel::changed, this, &DeviceMixerWidget::refresh);
     }
@@ -95,7 +97,8 @@ void DeviceMixerWidget::Internals::InitHeaderWidgets() {
     iconWidget = iconWidgetFrame;
     
     btnMute = new QPushButton();
-    btnLinkChannels = new QPushButton();
+    btnLinkChannels = new QPushButton("Link");
+    btnLinkChannels->setCheckable(true);
     
     headerLayout = new QHBoxLayout();
     headerLayout->addWidget(iconWidget);
