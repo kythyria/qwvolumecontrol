@@ -8,8 +8,12 @@
 #include <QSlider>
 #include <QSignalMapper>
 #include <QGridLayout>
+#include <QFontMetrics>
 
 #include <mmdeviceapi.h>
+
+#define SCALE 500
+#define SCALEF SCALE##.0f
 
 const PROPERTYKEY PKEY_AudioEndpoint_PhysicalSpeakers = { { 0x1da5d803, 0xd492, 0x4edd, { 0x8c, 0x23, 0xe0, 0xc0, 0xff, 0xee, 0x7f, 0x0e } }, 3 };
 
@@ -108,9 +112,14 @@ void VolumeSliderWidget::Internal::modelUpdated() {
 VolumeSliderWidget::Internal::SliderRow::SliderRow(QString name, QGridLayout *grid, int row) {
     lblValue = new QLabel("0 %");
     
+    // Set the proper width for the numeric readout.
+    int valuewidth = lblValue->fontMetrics().width(formatPercentage(1.0f));
+    lblValue->setMinimumWidth(valuewidth);
+    lblValue->setAlignment(Qt::AlignRight|Qt::AlignCenter);
+    
     slider = new QSlider();
     slider->setMinimum(0);
-    slider->setMaximum(1000);
+    slider->setMaximum(SCALE);
     slider->setOrientation(Qt::Horizontal);
     
     this->grid = grid;
@@ -123,6 +132,12 @@ VolumeSliderWidget::Internal::SliderRow::SliderRow(QString name, QGridLayout *gr
         grid->addWidget(slider, row, 0, 1, 2);
     }
     grid->addWidget(lblValue, row, 2);
+    
+    
+}
+
+QString VolumeSliderWidget::Internal::SliderRow::formatPercentage(float factor) {
+    return QString("%0 %").arg(factor*100.0f, 3, 'f', 1);
 }
 
 void VolumeSliderWidget::Internal::SliderRow::setVisible(bool visible) {
@@ -132,11 +147,12 @@ void VolumeSliderWidget::Internal::SliderRow::setVisible(bool visible) {
 }
 
 float VolumeSliderWidget::Internal::SliderRow::value() {
-    return slider->value() / 1000.0f;
+    return slider->value() / SCALEF;
 }
 
 void VolumeSliderWidget::Internal::SliderRow::setValue(float val) {
-    slider->setValue(roundf(val * 1000.0f));
+    slider->setValue(roundf(val * SCALEF));
+    lblValue->setText(formatPercentage(val));
 }
 
 VolumeSliderWidget::Internal::SliderRow::~SliderRow() {

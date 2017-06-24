@@ -23,6 +23,8 @@ class VolumeSliderWidget::Internal : public QObject
     class SliderRow {
         QGridLayout *grid;
         
+        QString formatPercentage(float factor);
+        
     public:
         QLabel *lblName;
         QLabel *lblValue;
