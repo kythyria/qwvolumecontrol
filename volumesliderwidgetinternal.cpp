@@ -21,7 +21,8 @@ VolumeSliderWidget::Internal::Internal(AbstractVolumeModel *model, VolumeSliderW
     : QObject(parent), model(0), linked(false)
 {
     grid = new QGridLayout();
-    parent->setLayout(grid); 
+    grid->setMargin(0);
+    parent->setLayout(grid);
     
     mapper = new QSignalMapper(this);
     connect(mapper, SIGNAL(mapped(int)), this, SLOT(sliderMoved(int)));

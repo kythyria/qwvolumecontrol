@@ -38,15 +38,10 @@ public:
     QPushButton *btnMute;
     QPushButton *btnLinkChannels;
     
-    QHBoxLayout *masterSliderLayout;
-    QSlider *masterSlider;
-    QLabel *masterSliderText;
-    
     VolumeSliderWidget *sliders;
     
     void InitHeaderWidgets();
     void PopulateHeaderWidgets();
-    void createMasterSlider();
 };
 
 DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWidget(parent) {
@@ -67,13 +62,11 @@ DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWi
         AlertHresult(hr, QString("Unable to open the volume control for %0 (%1)").arg(stuff->lblDeviceName->text()));
         
         stuff->dvm = new DeviceVolumeModel(stuff->device, this);
-        stuff->createMasterSlider();
         
         stuff->sliders = new VolumeSliderWidget(stuff->dvm);
         stuff->vbox->addWidget(stuff->sliders);
         
         connect(stuff->dvm, &DeviceVolumeModel::changed, this, &DeviceMixerWidget::refresh);
-        connect(stuff->masterSlider, &QSlider::valueChanged, this, &DeviceMixerWidget::masterSliderChanged);
     }
     
     this->setLayout(stuff->vbox);
@@ -136,28 +129,5 @@ void DeviceMixerWidget::Internals::PopulateHeaderWidgets() {
     PropVariantClear(&pv);
 }
 
-void DeviceMixerWidget::Internals::createMasterSlider() {
-    masterSliderLayout = new QHBoxLayout();
-    
-    masterSlider = new QSlider();
-    masterSlider->setMinimum(0);
-    masterSlider->setMaximum(100);
-    masterSlider->setOrientation(Qt::Horizontal);
-    
-    float vol = 0.0f;
-    volume->GetMasterVolumeLevelScalar(&vol);
-    masterSlider->setValue(roundf(vol*100.0f));
-    
-    masterSliderLayout->addWidget(masterSlider);
-    vbox->addLayout(masterSliderLayout);
-}
-
 void DeviceMixerWidget::refresh() {
-    float vol = stuff->dvm->volume();
-    stuff->masterSlider->setValue(roundf(vol*100.0f));
-}
-
-void DeviceMixerWidget::masterSliderChanged(int val) {
-    float vol = val / 100.0f;
-    stuff->dvm->setVolume(vol);
 }
