@@ -5,12 +5,13 @@
 
 #include <math.h>
 #include <QLabel>
-#include <QSlider>
 #include <QSignalMapper>
 #include <QGridLayout>
 #include <QFontMetrics>
 
 #include <mmdeviceapi.h>
+
+#include "wheellessslider.h"
 
 #define SCALE 500
 #define SCALEF SCALE##.0f
@@ -121,7 +122,7 @@ VolumeSliderWidget::Internal::SliderRow::SliderRow(QString name, QGridLayout *gr
     lblValue->setMaximumWidth(valuewidth);
     lblValue->setAlignment(Qt::AlignRight|Qt::AlignCenter);
     
-    slider = new QSlider();
+    slider = new WheellessSlider();
     slider->setMinimum(0);
     slider->setMaximum(SCALE);
     slider->setOrientation(Qt::Horizontal);

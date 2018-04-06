@@ -11,7 +11,8 @@ SOURCES += main.cpp \
     abstractvolumemodel.cpp \
     devicevolumemodel.cpp \
     volumesliderwidget.cpp \
-    volumesliderwidgetinternal.cpp
+    volumesliderwidgetinternal.cpp \
+    wheellessslider.cpp
 
 RESOURCES += \
     resources.qrc
@@ -34,7 +35,8 @@ HEADERS += \
     devicevolumemodel.h \
     volumesliderwidget.h \
     volumesliderwidgetinternal.h \
-    speakerformats.h
+    speakerformats.h \
+    wheellessslider.h
 
 DISTFILES += \
     .astylerc \

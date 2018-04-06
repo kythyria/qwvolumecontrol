@@ -8,7 +8,7 @@
 
 class AbstractVolumeModel;
 class QLabel;
-class QSlider;
+class WheellessSlider;
 class QSignalMapper;
 class QGridLayout;
 
@@ -28,7 +28,7 @@ class VolumeSliderWidget::Internal : public QObject
     public:
         QLabel *lblName;
         QLabel *lblValue;
-        QSlider *slider;
+        WheellessSlider *slider;
         
         SliderRow(QString name, QGridLayout *grid, int row);
         ~SliderRow();
