@@ -4,11 +4,10 @@
 #include <QWidget>
 #include <memory>
 #include <mmdeviceapi.h>
-#include <comdef.h>
-#include <comip.h>
+#include "comstuff.h"
 
 class DeviceMixerListWidget_internal;
-_COM_SMARTPTR_TYPEDEF(IMMDeviceCollection, __uuidof(IMMDeviceCollection));
+COM_SMARTPTR(IMMDeviceCollection);
 
 class DeviceMixerListWidget : public QWidget
 {

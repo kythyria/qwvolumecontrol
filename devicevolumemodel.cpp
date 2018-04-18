@@ -6,9 +6,8 @@
 #include <QtDebug>
 #include <windows.h>
 
-_COM_SMARTPTR_TYPEDEF(IAudioEndpointVolume, __uuidof(IAudioEndpointVolume));
-_COM_SMARTPTR_TYPEDEF(IPropertyStore, __uuidof(IPropertyStore));
-
+COM_SMARTPTR(IAudioEndpointVolume);
+COM_SMARTPTR(IPropertyStore);
 
 class DeviceVolumeModel::Internal : public IAudioEndpointVolumeCallback {
     DeviceVolumeModel *owner;

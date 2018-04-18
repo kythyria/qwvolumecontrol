@@ -5,10 +5,9 @@
 #include <memory>
 
 #include <mmdeviceapi.h>
-#include <comdef.h>
-#include <comip.h>
+#include "comstuff.h"
 
-_COM_SMARTPTR_TYPEDEF(IMMDevice, __uuidof(IMMDevice));
+COM_SMARTPTR(IMMDevice);
 
 class DeviceMixerWidget : public QWidget
 {

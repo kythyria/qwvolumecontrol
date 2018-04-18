@@ -3,19 +3,17 @@
 #include <QTabWidget>
 #include <QScrollArea>
 #include <stdlib.h>
-
 #include <mmdeviceapi.h>
-#include <comdef.h>
-#include <comip.h>
 
-#include <devicemixerlistwidget.h>
-#include <util.h>
+#include "devicemixerlistwidget.h"
+#include "util.h"
+#include "comstuff.h"
 
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 
-_COM_SMARTPTR_TYPEDEF(IMMDeviceEnumerator, __uuidof(IMMDeviceEnumerator));
-_COM_SMARTPTR_TYPEDEF(IMMDeviceCollection, __uuidof(IMMDeviceCollection));
+COM_SMARTPTR(IMMDeviceEnumerator);
+//_COM_SMARTPTR_TYPEDEF(IMMDeviceCollection, __uuidof(IMMDeviceCollection));
 
 class VolMainWindow_internal {
 public:

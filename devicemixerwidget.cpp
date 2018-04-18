@@ -16,8 +16,8 @@
 #include "devicevolumemodel.h"
 #include "volumesliderwidget.h"
 
-_COM_SMARTPTR_TYPEDEF(IPropertyStore, __uuidof(IPropertyStore));
-_COM_SMARTPTR_TYPEDEF(IAudioEndpointVolume, __uuidof(IAudioEndpointVolume));
+COM_SMARTPTR(IPropertyStore);
+COM_SMARTPTR(IAudioEndpointVolume);
 
 class DeviceMixerWidget::Internals {
 public:

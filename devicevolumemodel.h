@@ -3,12 +3,11 @@
 
 #include "abstractvolumemodel.h"
 #include <mmdeviceapi.h>
-#include <comip.h>
-#include <comdef.h>
 #include <endpointvolume.h>
 
-_COM_SMARTPTR_TYPEDEF(IMMDevice, __uuidof(IMMDevice));
+#include "comstuff.h"
 
+COM_SMARTPTR(IMMDevice);
 
 class DeviceVolumeModel : public AbstractVolumeModel
 {

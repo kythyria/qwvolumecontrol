@@ -7,7 +7,7 @@
 #include "util.h"
 #include "devicemixerwidget.h"
 
-_COM_SMARTPTR_TYPEDEF(IMMDevice, __uuidof(IMMDevice));
+COM_SMARTPTR(IMMDevice);
 
 class DeviceMixerListWidget_internal {
 public:

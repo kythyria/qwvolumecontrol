@@ -36,7 +36,8 @@ HEADERS += \
     volumesliderwidget.h \
     volumesliderwidgetinternal.h \
     speakerformats.h \
-    wheellessslider.h
+    wheellessslider.h \
+    comstuff.h
 
 DISTFILES += \
     .astylerc \
