@@ -2,7 +2,7 @@
 #define SESSIONMIXERLISTWIDGET_H
 
 #include <QWidget>
-
+#include <memory>
 #include <audiopolicy.h>
 #include "comstuff.h"
 
@@ -14,14 +14,14 @@ class SessionMixerListWidget : public QWidget
     Q_OBJECT
     
     class Internal;
-    Internal *stuff;
+    std::unique_ptr<Internal> stuff;
     
 public:
     SessionMixerListWidget(IAudioSessionManager2Ptr smgr);
     virtual ~SessionMixerListWidget();
     
 private slots:
-    void sessionExists(IAudioSessionControl2Ptr session);
+    void sessionExists(IAudioSessionControl2 *session);
 };
 
 #endif // SESSIONMIXERLISTWIDGET_H

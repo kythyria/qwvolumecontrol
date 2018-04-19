@@ -2,39 +2,41 @@
 #include "sessioncreationsource.h"
 
 #include <QDebug>
+#include "util.h"
 
-class SessionMixerListWidget::Internal : public QObject {
+class SessionMixerListWidget::Internal {
     
 public:
     SessionCreationSource *sessionSource;
     
-    Internal(QObject *parent = nullptr);
+    Internal();
     virtual ~Internal();
     
 };
 
 SessionMixerListWidget::SessionMixerListWidget(IAudioSessionManager2Ptr smgr)
 {
-    stuff = new SessionMixerListWidget::Internal(this);
-    stuff->sessionSource = new SessionCreationSource(smgr);
+    stuff = std::make_unique<Internal>();
+    stuff->sessionSource = new SessionCreationSource(smgr, this);
     connect(stuff->sessionSource, &SessionCreationSource::sessionExists, this, &SessionMixerListWidget::sessionExists);
     stuff->sessionSource->triggerEnumeration();
 }
 
 SessionMixerListWidget::~SessionMixerListWidget() { }
 
-SessionMixerListWidget::Internal::Internal(QObject *parent) : QObject(parent) { }
+SessionMixerListWidget::Internal::Internal()  { }
 SessionMixerListWidget::Internal::~Internal() { }
 
-
-void SessionMixerListWidget::sessionExists(IAudioSessionControl2Ptr session) {
+void SessionMixerListWidget::sessionExists(IAudioSessionControl2 *s) {
+    IAudioSessionControl2Ptr session(s, true);
+    
     LPWSTR sessioniid;
     HRESULT hr = session->GetSessionInstanceIdentifier(&sessioniid);
     if(FAILED(hr)) {
         qDebug() << "Failed to get session instance identifier (" << hr << ")";
     }
     else {
-        qDebug() << "Saw session: " << sessioniid;
+        qDebug() << "Saw session: " << QString::fromWCharArray(sessioniid);
         CoTaskMemFree(sessioniid);
     }
 }

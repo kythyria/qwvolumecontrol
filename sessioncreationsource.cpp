@@ -3,7 +3,7 @@
 #include <QThread>
 #include <QDebug>
 #include <objbase.h>
-#include <util.h>
+#include "util.h"
 
 namespace MetatypeId {
 static RegisterMetatype<IAudioSessionControl2Ptr> IAudioSessionControl2Ptr;
@@ -66,13 +66,13 @@ HRESULT STDMETHODCALLTYPE SessionCreationSource::SessionNotificationCallback::Qu
 }
 
 HRESULT SessionCreationSource::SessionNotificationCallback::OnSessionCreated(IAudioSessionControl *NewSession) {
-    IAudioSessionControl2Ptr s2;
+    IAudioSessionControl2 *s2;
     HRESULT hr = NewSession->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&s2);
     if(FAILED(hr)) {
         qDebug() << "Couldn't cast session (" << hr << ")";
     }
     
-    emit manager->sessionExists(s2);
+    emit manager->notificationTrampoline(s2);
     return S_OK;
 }
 
@@ -96,24 +96,28 @@ protected:
     }
     
 private:
-    static SessionNotificationFactoryThread *thread;
+    static SessionNotificationFactoryThread *factorythread;
 public:
-    SessionNotificationFactoryThread *runningThread() { 
-        if(thread == nullptr) {
-            thread = new SessionNotificationFactoryThread();
-            thread->start();
+    static SessionNotificationFactoryThread *runningThread() { 
+        if(factorythread == nullptr) {
+            factorythread = new SessionNotificationFactoryThread();
+            factorythread->start();
         }
         
-        return thread;
+        return factorythread;
     }
 };
 
-SessionNotificationFactoryThread *SessionNotificationFactoryThread::thread = nullptr;
+SessionNotificationFactoryThread *SessionNotificationFactoryThread::factorythread = nullptr;
 
 SessionCreationSource::SessionCreationSource(IAudioSessionManager2Ptr sessionManager, QObject *parent) :
     QObject(parent),
-    manager(manager)
+    manager(sessionManager)
 {
+    SessionNotificationFactoryThread::runningThread();
+    
+    connect(this, &SessionCreationSource::notificationTrampoline, this, &SessionCreationSource::notificationTrampolineLanding);
+    
     this->callback = new SessionNotificationCallback(this);
     
     HRESULT hr;
@@ -126,6 +130,11 @@ SessionCreationSource::SessionCreationSource(IAudioSessionManager2Ptr sessionMan
 SessionCreationSource::~SessionCreationSource() {
     this->manager->UnregisterSessionNotification(this->callback_as_callback);
     delete this->callback;
+}
+
+void SessionCreationSource::notificationTrampolineLanding(IAudioSessionControl2 *session) {
+    IAudioSessionControl2Ptr s(session);
+    emit sessionExists(s);
 }
 
 void SessionCreationSource::triggerEnumeration() {
@@ -145,13 +154,15 @@ void SessionCreationSource::triggerEnumeration() {
         hr = enumer->GetSession(i, &session);
         if(FAILED(hr)) {
             qDebug() << "Couldn't get session " << i;
+            continue;
         }
-        
         IAudioSessionControl2Ptr s2;
         hr = session.QueryInterface(__uuidof(IAudioSessionControl2), &s2);
         if(FAILED(hr)) {
             qDebug() << "Couldn't cast session " << i;
+            continue;
         }
-        emit sessionExists(s2);
+        
+        emit sessionExists(s2.GetInterfacePtr());
     }
 }

@@ -31,10 +31,20 @@ public:
     virtual ~SessionCreationSource();
     
 signals:
-    void sessionExists(IAudioSessionControl2Ptr session);
+    void sessionExists(IAudioSessionControl2 *session);
+    
+    // Implementation detail: to avoid problems with the lifetime of the session,
+    // this pair are used to bring execution onto the main thread safely.
+    // They're literally just connected together and used for the marshalling
+    // properties of signals.
+    void notificationTrampoline(IAudioSessionControl2 *session);
+    
+private slots:
+    void notificationTrampolineLanding(IAudioSessionControl2* session);
     
 public slots:
     void triggerEnumeration();
+
 };
 
 #endif // SESSIONCREATIONSOURCE_H
