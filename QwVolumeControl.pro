@@ -14,7 +14,8 @@ SOURCES += main.cpp \
     volumesliderwidgetinternal.cpp \
     wheellessslider.cpp \
     sessioncreationsource.cpp \
-    sessionmixerlistwidget.cpp
+    sessionmixerlistwidget.cpp \
+    sessionmixerwidget.cpp
 
 RESOURCES += \
     resources.qrc
@@ -41,7 +42,8 @@ HEADERS += \
     wheellessslider.h \
     sessioncreationsource.h \
     comstuff.h \
-    sessionmixerlistwidget.h
+    sessionmixerlistwidget.h \
+    sessionmixerwidget.h
 
 DISTFILES += \
     .astylerc \
