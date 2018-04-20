@@ -9,4 +9,6 @@ QPixmap GetIconFromResource(wchar_t *path, QSize desiredSize);
 QPixmap GetIconFromResource(QString path, QSize desiredSize);
 QPixmap GetIconFromResource(QString path, int id, QSize desiredSize);
 
+QString GetStringByPossibleResource(QString reference);
+
 #endif // GETICONFROMRESOURCE_H

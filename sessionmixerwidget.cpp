@@ -8,6 +8,7 @@
 #include <QSlider>
 
 #include "util.h"
+#include "getresource.h"
 #include <QDebug>
 
 class SessionMixerWidget::Internal {
@@ -43,9 +44,7 @@ void SessionMixerWidget::Internal::InitWidgets() {
 
 void SessionMixerWidget::Internal::PopulateWidgets() {
     HRESULT hr;
-    
-    DBG_PRINT << "populate";
-    
+
     LPWSTR lpwInstanceid;
     hr = session->GetSessionInstanceIdentifier(&lpwInstanceid);
     QString instanceid = QString::fromWCharArray(lpwInstanceid);
@@ -57,6 +56,13 @@ void SessionMixerWidget::Internal::PopulateWidgets() {
     hr = session->GetDisplayName(&lpwDisplayName);
     QString displayname = QString::fromWCharArray(lpwDisplayName);
     assertHR(hr, QString("Couldn't get session display name (%1)\n%0").arg(instanceid));
+    displayname = QString::fromWCharArray(lpwDisplayName);
+    if(displayname.length() > 0) {
+        displayname = GetStringByPossibleResource(displayname);
+    }
+    else { // As usual, the display name isn't set. Time to guess.
+        
+    }
     lblDisplayName->setText(displayname);
     
     CoTaskMemFree(lpwInstanceid);
