@@ -169,8 +169,22 @@ QString GuessNameForPid(unsigned long pid) {
                                 break;
                             }
                         }
+                        
+                        // 0000 isn't necessarily in the list for some reason,
+                        // and some programs only have stuff under that (eg, Firefox).
+                        if(descriptionlength == 0) {
+                            QString verid = templ.arg("0000");
+                            const ushort* veridbuf = verid.utf16();
+                            
+                            if(!VerQueryValue(versionBuffer, (WCHAR*)veridbuf, (LPVOID*)&description, &descriptionlength)) {
+                                description = NULL;
+                                descriptionlength = 0;
+                            }
+                        }
+                        
                         if(descriptionlength > 0) {
-                            result = QString::fromWCharArray(description, descriptionlength);
+                            result = QString::fromWCharArray(description, descriptionlength)
+                                    .append(QString(" (%0)").arg(pid));
                         }
                     }
                     delete[] threadlanglist;
