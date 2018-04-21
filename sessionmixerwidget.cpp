@@ -47,24 +47,25 @@ void SessionMixerWidget::Internal::PopulateWidgets() {
 
     LPWSTR lpwInstanceid;
     hr = session->GetSessionInstanceIdentifier(&lpwInstanceid);
-    QString instanceid = QString::fromWCharArray(lpwInstanceid);
-    
     assertHR(hr, "Couldn't get session instance id (%0)");
+    QString instanceid = QString::fromWCharArray(lpwInstanceid);
+    CoTaskMemFree(lpwInstanceid);
     lblInstanceId->setText(instanceid);
     
     LPWSTR lpwDisplayName;
     hr = session->GetDisplayName(&lpwDisplayName);
-    QString displayname = QString::fromWCharArray(lpwDisplayName);
     assertHR(hr, QString("Couldn't get session display name (%1)\n%0").arg(instanceid));
-    displayname = QString::fromWCharArray(lpwDisplayName);
+    QString displayname = QString::fromWCharArray(lpwDisplayName);
+    CoTaskMemFree(lpwDisplayName);
     if(displayname.length() > 0) {
         displayname = GetStringByPossibleResource(displayname);
     }
     else { // As usual, the display name isn't set. Time to guess.
-        
+        DWORD pid;
+        hr = session->GetProcessId(&pid);
+        assertHR(hr, QString("Couldn't get session process id (%1)\n%0").arg(instanceid));
+        displayname = GuessNameForPid(pid);
     }
     lblDisplayName->setText(displayname);
     
-    CoTaskMemFree(lpwInstanceid);
-    CoTaskMemFree(lpwDisplayName);
 }

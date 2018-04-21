@@ -11,4 +11,6 @@ QPixmap GetIconFromResource(QString path, int id, QSize desiredSize);
 
 QString GetStringByPossibleResource(QString reference);
 
+QString GuessNameForPid(unsigned long pid);
+
 #endif // GETICONFROMRESOURCE_H

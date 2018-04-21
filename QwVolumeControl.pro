@@ -20,7 +20,7 @@ SOURCES += main.cpp \
 RESOURCES += \
     resources.qrc
 
-LIBS += "-LC:/Program Files (x86)/Windows Kits/10/Lib/10.0.14393.0/um/x64" -lOle32 -lUser32 -lcomsuppw -lShlwapi
+LIBS += "-LC:/Program Files (x86)/Windows Kits/10/Lib/10.0.14393.0/um/x64" -lOle32 -lUser32 -lcomsuppw -lShlwapi -lMincore
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
