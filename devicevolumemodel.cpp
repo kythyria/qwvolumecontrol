@@ -18,8 +18,13 @@ class DeviceVolumeModel::Internal : public IAudioEndpointVolumeCallback {
 public:
     uint channelMask;
     IAudioEndpointVolumePtr vol;
+    IMMDevicePtr device;
+    IPropertyStorePtr props;
     
-    DeviceVolumeModel::Internal(DeviceVolumeModel *owner, IAudioEndpointVolumePtr vol);
+    QString deviceName;
+    QString deviceDescription;
+    
+    DeviceVolumeModel::Internal(DeviceVolumeModel *owner);
     
     // IUnknown
     virtual ULONG AddRef();
@@ -33,22 +38,35 @@ public:
 
 DeviceVolumeModel::DeviceVolumeModel(IMMDevicePtr device, QObject *parent) : AbstractVolumeModel(parent)
 {
-    IAudioEndpointVolumePtr vol;
-    IAudioEndpointVolume **paev = &(vol);
-    HRESULT hr = device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)paev);
-    AlertHresult(hr, QString("Unable to open the volume control (%1)"));
+    stuff = new Internal(this);
+    stuff->device = device;
     
-    stuff = new Internal(this, vol);
-    
-    IPropertyStorePtr props;
-    hr = device->OpenPropertyStore(STGM_READ, &props);
+    HRESULT hr = device->OpenPropertyStore(STGM_READ, &stuff->props);
     assertHR(hr, "Couldn't open device property store (%0)");
     
     PROPVARIANT pv;
     
+    hr = stuff->props->GetValue(PKEY_Device_DeviceDesc, &pv);
+    assertHR(hr, "Couldn't get device description (%0)");
+    stuff->deviceDescription = QString::fromWCharArray(pv.pwszVal);
+    PropVariantClear(&pv);
+    
+    hr = stuff->props->GetValue(PKEY_DeviceInterface_FriendlyName, &pv);
+    //if(AlertHresult(hr, QString("Couldn't get device friendly name for %0 (%1)").arg(lblDeviceDesc->text()))) {
+    if(SUCCEEDED(hr)) {
+        stuff->deviceName = QString::fromWCharArray(pv.pwszVal);
+    }
+    PropVariantClear(&pv);
+    
+    if(!currentlyHasVolume()) { return; }
+    
+    IAudioEndpointVolume **paev = &(stuff->vol);
+    hr = device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)paev);
+    AlertHresult(hr, QString("Unable to open the volume control (%1)"));
+    
     // Okay, so IPropertyStore succeeds but pv.vt == VT_EMPTY if the property doesn't exist.
     // FIXME: Deduce the channel names if the user hasn't configured it.
-    hr = props->GetValue(PKEY_AudioEndpoint_PhysicalSpeakers, &pv);
+    hr = stuff->props->GetValue(PKEY_AudioEndpoint_PhysicalSpeakers, &pv);
     stuff->channelMask = pv.uintVal;
     PropVariantClear(&pv);
     
@@ -69,7 +87,7 @@ DeviceVolumeModel::DeviceVolumeModel(IMMDevicePtr device, QObject *parent) : Abs
         }
     }
     
-    vol->RegisterControlChangeNotify((IAudioEndpointVolumeCallback*)stuff);
+    stuff->vol->RegisterControlChangeNotify((IAudioEndpointVolumeCallback*)stuff);
     
     qDebug() << "Device channels: " << this->channelLayoutMask();
     for(uint i = 0; i < this->channelCount(); i++) {
@@ -82,14 +100,14 @@ DeviceVolumeModel::~DeviceVolumeModel() {
     stuff->Release();
 }
 
-DeviceVolumeModel::Internal::Internal(DeviceVolumeModel *owner, IAudioEndpointVolumePtr vol) : refcount(1) {
-    this->vol = vol;
-    this->owner = owner;
-}
+DeviceVolumeModel::Internal::Internal(DeviceVolumeModel *owner) :
+    refcount(1),
+    owner(owner)
+{ }
 
 HRESULT DeviceVolumeModel::Internal::OnNotify(PAUDIO_VOLUME_NOTIFICATION_DATA pNotify) {
-    (void)pNotify;
-    owner->metaObject()->invokeMethod(owner, "changed", Qt::QueuedConnection);
+    (void)
+    owner->metaObject()->invokeMethod(owner, "volumeChanged", Qt::QueuedConnection, Q_ARG(float, pNotify->fMasterVolume));
     return S_OK;
 }
 
@@ -162,4 +180,19 @@ bool DeviceVolumeModel::muted() {
 
 void DeviceVolumeModel::setMuted(bool muted) {
     stuff->vol->SetMute(muted, NULL);
+}
+
+QString DeviceVolumeModel::name() {
+    return stuff->deviceName;
+}
+
+QString DeviceVolumeModel::description() {
+    return stuff->deviceDescription;
+}
+
+bool DeviceVolumeModel::currentlyHasVolume() {
+    DWORD state;
+    HRESULT hr =stuff->device->GetState(&state);
+    
+    return SUCCEEDED(hr) && state == DEVICE_STATE_ACTIVE;
 }

@@ -94,3 +94,7 @@ float AbstractVolumeModel::decibels() {
 void AbstractVolumeModel::setDecibels(float dbVolume) {
     (void)dbVolume;
 }
+
+void AbstractVolumeModel::setName(QString newName) {
+    (void)newName;
+}

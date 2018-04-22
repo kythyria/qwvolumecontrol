@@ -56,21 +56,21 @@ DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWi
     DWORD state;
     HRESULT hr = device->GetState(&state);
     
-    stuff->dvm = nullptr;
+    stuff->dvm = new DeviceVolumeModel(stuff->device, this);
     
-    if(SUCCEEDED(hr) && state == DEVICE_STATE_ACTIVE) {
+    if(stuff->dvm->currentlyHasVolume()) {
         IAudioEndpointVolume **paev = &(stuff->volume);
         HRESULT hr = device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)paev);
         AlertHresult(hr, QString("Unable to open the volume control for %0 (%1)").arg(stuff->lblDeviceName->text()));
         
-        stuff->dvm = new DeviceVolumeModel(stuff->device, this);
+        
         
         stuff->sliders = new VolumeSliderWidget(stuff->dvm);
         stuff->vbox->addWidget(stuff->sliders);
         connect(stuff->btnLinkChannels, &QPushButton::toggled, stuff->sliders, &VolumeSliderWidget::linkChannels);
         stuff->btnLinkChannels->setChecked(true);
         
-        connect(stuff->dvm, &DeviceVolumeModel::changed, this, &DeviceMixerWidget::refresh);
+        connect(stuff->dvm, &DeviceVolumeModel::volumeChanged, this, &DeviceMixerWidget::refresh);
         connect(stuff->btnShowSessions, &QPushButton::clicked, this, [this]() {
             IAudioSessionManager2Ptr iasm;
             HRESULT hr = this->stuff->device->Activate(__uuidof(IAudioSessionManager2), CLSCTX_ALL, NULL, (void**)&iasm);

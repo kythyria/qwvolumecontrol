@@ -32,20 +32,18 @@ public:
     virtual void setMuted(bool muted);
     
 signals:
-    void nameChanged(QString newName);
     void iconPathChanged(QString newIconPath);
     void sessionDisconnected();
     void stateChanged(AudioSessionState newState);
     
 public slots:
-    void setName(QString newName);
     void setIconPath(QString newIconPath);
+    virtual void setName(QString newName);
     
 public:
-    QString name();
+    virtual QString name();
     QString iconPath();
     
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(QString iconPath READ iconPath WRITE setIconPath NOTIFY iconPathChanged)
     
 };

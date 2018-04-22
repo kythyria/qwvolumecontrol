@@ -5,9 +5,7 @@
 #include <objbase.h>
 #include "util.h"
 
-namespace MetatypeId {
-static RegisterMetatype<IAudioSessionControl2Ptr> IAudioSessionControl2Ptr;
-}
+REGISTER_METATYPE(IAudioSessionControl2Ptr)
 
 COM_SMARTPTR(IAudioSessionEnumerator);
 COM_SMARTPTR(IAudioSessionControl);

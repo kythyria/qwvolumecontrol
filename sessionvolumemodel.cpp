@@ -3,6 +3,9 @@
 #include "getresource.h"
 #include "util.h"
 
+Q_DECLARE_METATYPE(AudioSessionState)
+REGISTER_METATYPE(AudioSessionState)
+
 COM_SMARTPTR(ISimpleAudioVolume);
 
 class SessionVolumeModel::Internal : public IAudioSessionEvents {
@@ -58,14 +61,14 @@ COM_IMPL_QUERYINTERFACE(SessionVolumeModel::Internal,
     COM_IMPL_QICASE(IAudioSessionEvents))
 
 #define DEFER_EMIT(target, method, ...) \
-    target->metaObject()->invokeMethod(target, method, Qt::QueuedConnection, ##__VA_ARGS__)
+    target->metaObject()->invokeMethod(target, #method, Qt::QueuedConnection, ##__VA_ARGS__)
 
 HRESULT SessionVolumeModel::Internal::OnChannelVolumeChanged(DWORD ChannelCount, float NewChannelVolumeArray[], DWORD ChangedChannel, LPCGUID EventContext) {
     (void)ChannelCount;
     (void)NewChannelVolumeArray;
     (void)ChangedChannel;
     if(!IsEqualGUID(*EventContext, eventContext)) {
-        DEFER_EMIT(model, &SessionVolumeModel::changed);
+        DEFER_EMIT(model, volumeChanged);
     }
     return S_OK;
 }
@@ -73,7 +76,7 @@ HRESULT SessionVolumeModel::Internal::OnChannelVolumeChanged(DWORD ChannelCount,
 HRESULT SessionVolumeModel::Internal::OnDisplayNameChanged(LPCWSTR NewDisplayName, LPCGUID EventContext) {
     if(!IsEqualGUID(*EventContext, eventContext)) {
         QString newname = QString::fromWCharArray(NewDisplayName);
-        emit model->nameChanged(newname);
+        DEFER_EMIT(model, nameChanged, Q_ARG(QString, newname));
     }
     return S_OK;
 }
@@ -85,14 +88,14 @@ HRESULT SessionVolumeModel::Internal::OnGroupingParamChanged(LPCGUID NewGrouping
 HRESULT SessionVolumeModel::Internal::OnIconPathChanged(LPCWSTR NewIconPath, LPCGUID EventContext) {
     if(!IsEqualGUID(*EventContext, eventContext)) {
         QString newpath = QString::fromWCharArray(NewIconPath);
-        emit model->iconPathChanged(newpath);
+        DEFER_EMIT(model, iconPathChanged, Q_ARG(QString, newpath));
     }
     return S_OK;
 }
 
 HRESULT SessionVolumeModel::Internal::OnSessionDisconnected(AudioSessionDisconnectReason DisconnectReason) {
     (void)DisconnectReason;
-    emit model->sessionDisconnected();
+    DEFER_EMIT(model, sessionDisconnected);
     return S_OK;
 }
 
@@ -100,13 +103,13 @@ HRESULT SessionVolumeModel::Internal::OnSimpleVolumeChanged(float NewVolume, BOO
     (void)NewVolume;
     (void)NewMute;
     if(!IsEqualGUID(*EventContext, eventContext)) {
-        emit model->changed();
+        DEFER_EMIT(model, volumeChanged, Q_ARG(FLOAT, NewVolume));
     }
     return S_OK;
 }
 
 HRESULT SessionVolumeModel::Internal::OnStateChanged(AudioSessionState NewState) {
-    emit model->stateChanged(NewState);
+    DEFER_EMIT(model, stateChanged, Q_ARG(AudioSessionState, NewState));
     return S_OK;
 }
 

@@ -36,7 +36,7 @@ VolumeSliderWidget::Internal::~Internal() {
 void VolumeSliderWidget::Internal::setVolumeModel(AbstractVolumeModel *model) {
     if(this->model) {
         destroyChannels();
-        disconnect(this->model, &AbstractVolumeModel::changed, this, &Internal::modelUpdated);
+        disconnect(this->model, &AbstractVolumeModel::volumeChanged, this, &Internal::modelUpdated);
         model = 0;
     }
     
@@ -44,7 +44,7 @@ void VolumeSliderWidget::Internal::setVolumeModel(AbstractVolumeModel *model) {
     initChannels();
     modelUpdated();
     
-    connect(this->model, SIGNAL(changed()), this, SLOT(modelUpdated()));
+    connect(this->model, &AbstractVolumeModel::volumeChanged, this, &Internal::modelUpdated);
 }
 
 void VolumeSliderWidget::Internal::initChannels() {

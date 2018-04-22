@@ -6,6 +6,12 @@
 class AbstractVolumeModel : public QObject
 {
     Q_OBJECT
+    
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(float volume READ volume WRITE setVolume NOTIFY volumeChanged)
+    Q_PROPERTY(bool muted READ muted WRITE setMuted)
+    Q_PROPERTY(float decibels READ decibels WRITE setDecibels)
+    
 public:
     explicit AbstractVolumeModel(QObject *parent = 0);
     virtual ~AbstractVolumeModel();
@@ -20,18 +26,24 @@ public:
     virtual float decibelsMin();
     virtual float decibelsMax();
     virtual float decibels();
-    virtual void setDecibels(float dbVolume);
     
     virtual float volume() = 0;
-    virtual void setVolume(float volume) = 0;
-    
     virtual bool muted() = 0;
-    virtual void setMuted(bool muted) = 0;
+    
+    virtual QString name() = 0;
+    virtual QString description() = 0;
+    
+    virtual bool currentlyHasVolume() = 0;
     
 signals:
-    void changed();
+    void volumeChanged(float volume);
+    void nameChanged(QString newName);
     
 public slots:
+    virtual void setVolume(float volume) = 0;
+    virtual void setMuted(bool muted) = 0;
+    virtual void setDecibels(float dbVolume);
+    virtual void setName(QString newName);
 };
 
 #endif // ABSTRACTVOLUMEMODEL_H

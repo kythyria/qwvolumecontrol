@@ -35,6 +35,11 @@ public:
     
     virtual bool muted();
     virtual void setMuted(bool muted);
+    
+    virtual QString name();
+    virtual QString description();
+    
+    virtual bool currentlyHasVolume();
 };
 
 #endif // DEVICEVOLUMEMODEL_H

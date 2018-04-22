@@ -17,6 +17,11 @@ public:
     const int id() const { return reg_id; }
 };
 
+#define REGISTER_METATYPE(typ) \
+    namespace MetaTypeId { \
+        static RegisterMetatype<typ> typ; \
+    } 
+
 #define COM_SMARTPTR(typ) \
     _COM_SMARTPTR_TYPEDEF(typ, __uuidof(typ))
 
