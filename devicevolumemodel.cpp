@@ -93,33 +93,9 @@ HRESULT DeviceVolumeModel::Internal::OnNotify(PAUDIO_VOLUME_NOTIFICATION_DATA pN
     return S_OK;
 }
 
-ULONG STDMETHODCALLTYPE DeviceVolumeModel::Internal::AddRef() {
-    return InterlockedIncrement(&refcount);
-}
-
-ULONG STDMETHODCALLTYPE DeviceVolumeModel::Internal::Release() {
-    ULONG ulRef = InterlockedDecrement(&refcount);
-    if (0 == ulRef) {
-        delete this;
-    }
-    return ulRef;
-}
-
-HRESULT STDMETHODCALLTYPE DeviceVolumeModel::Internal::QueryInterface(REFIID riid, void **ppvInterface) {
-    if (IID_IUnknown == riid) {
-        AddRef();
-        *ppvInterface = (IUnknown*)this;
-    }
-    else if (__uuidof(IAudioEndpointVolumeCallback) == riid) {
-        AddRef();
-        *ppvInterface = (IAudioEndpointVolumeCallback*)this;
-    }
-    else {
-        *ppvInterface = NULL;
-        return E_NOINTERFACE;
-    }
-    return S_OK;
-}
+COM_IMPL_REFCOUNT(DeviceVolumeModel::Internal)
+COM_IMPL_QUERYINTERFACE(DeviceVolumeModel::Internal,
+    COM_IMPL_QICASE(IAudioEndpointVolumeCallback))
 
 uint DeviceVolumeModel::channelCount() {
     uint count;

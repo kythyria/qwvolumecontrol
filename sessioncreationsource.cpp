@@ -37,33 +37,9 @@ SessionCreationSource::SessionNotificationCallback::SessionNotificationCallback(
 
 SessionCreationSource::SessionNotificationCallback::~SessionNotificationCallback() { }
 
-ULONG STDMETHODCALLTYPE SessionCreationSource::SessionNotificationCallback::AddRef() {
-    return InterlockedIncrement(&refcount);
-}
-
-ULONG STDMETHODCALLTYPE SessionCreationSource::SessionNotificationCallback::Release() {
-    ULONG ulRef = InterlockedDecrement(&refcount);
-    if (0 == ulRef) {
-        delete this;
-    }
-    return ulRef;
-}
-
-HRESULT STDMETHODCALLTYPE SessionCreationSource::SessionNotificationCallback::QueryInterface(REFIID riid, void **ppvInterface) {
-    if (IID_IUnknown == riid) {
-        AddRef();
-        *ppvInterface = (IUnknown*)this;
-    }
-    else if (__uuidof(IAudioSessionNotification) == riid) {
-        AddRef();
-        *ppvInterface = (IAudioSessionNotification*)this;
-    }
-    else {
-        *ppvInterface = NULL;
-        return E_NOINTERFACE;
-    }
-    return S_OK;
-}
+COM_IMPL_REFCOUNT(SessionCreationSource::SessionNotificationCallback)
+COM_IMPL_QUERYINTERFACE(SessionCreationSource::SessionNotificationCallback,
+    COM_IMPL_QICASE(IAudioSessionNotification))
 
 HRESULT SessionCreationSource::SessionNotificationCallback::OnSessionCreated(IAudioSessionControl *NewSession) {
     IAudioSessionControl2 *s2;
@@ -116,7 +92,7 @@ SessionCreationSource::SessionCreationSource(IAudioSessionManager2Ptr sessionMan
 {
     SessionNotificationFactoryThread::runningThread();
     
-    connect(this, &SessionCreationSource::notificationTrampoline, this, &SessionCreationSource::notificationTrampolineLanding);
+    connect(this, &SessionCreationSource::notificationTrampoline, this, &SessionCreationSource::notificationTrampolineLanding, Qt::QueuedConnection);
     
     this->callback = new SessionNotificationCallback(this);
     
