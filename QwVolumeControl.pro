@@ -15,7 +15,8 @@ SOURCES += main.cpp \
     sessioncreationsource.cpp \
     sessionmixerlistwidget.cpp \
     sessionmixerwidget.cpp \
-    getresource.cpp
+    getresource.cpp \
+    sessionvolumemodel.cpp
 
 RESOURCES += \
     resources.qrc
@@ -43,7 +44,8 @@ HEADERS += \
     comstuff.h \
     sessionmixerlistwidget.h \
     sessionmixerwidget.h \
-    getresource.h
+    getresource.h \
+    sessionvolumemodel.h
 
 DISTFILES += \
     .astylerc \
