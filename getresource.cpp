@@ -183,8 +183,7 @@ QString GuessNameForPid(unsigned long pid) {
                         }
                         
                         if(descriptionlength > 0) {
-                            result = QString::fromWCharArray(description, descriptionlength)
-                                    .append(QString(" (%0)").arg(pid));
+                            result = QString::fromWCharArray(description, descriptionlength);
                         }
                     }
                     delete[] threadlanglist;

@@ -74,17 +74,14 @@ HRESULT SessionVolumeModel::Internal::OnChannelVolumeChanged(DWORD ChannelCount,
     (void)ChannelCount;
     (void)NewChannelVolumeArray;
     (void)ChangedChannel;
-    if(!IsEqualGUID(*EventContext, eventContext)) {
-        DEFER_EMIT(model, volumeChanged);
-    }
+    //DEFER_EMIT(model, volumeChanged);
     return S_OK;
 }
 
 HRESULT SessionVolumeModel::Internal::OnDisplayNameChanged(LPCWSTR NewDisplayName, LPCGUID EventContext) {
-    if(!IsEqualGUID(*EventContext, eventContext)) {
-        QString newname = QString::fromWCharArray(NewDisplayName);
-        DEFER_EMIT(model, nameChanged, Q_ARG(QString, newname));
-    }
+    (void)EventContext;
+    QString newname = QString::fromWCharArray(NewDisplayName);
+    DEFER_EMIT(model, nameChanged, Q_ARG(QString, newname));
     return S_OK;
 }
 
@@ -93,10 +90,8 @@ HRESULT SessionVolumeModel::Internal::OnGroupingParamChanged(LPCGUID NewGrouping
 }
 
 HRESULT SessionVolumeModel::Internal::OnIconPathChanged(LPCWSTR NewIconPath, LPCGUID EventContext) {
-    if(!IsEqualGUID(*EventContext, eventContext)) {
-        QString newpath = QString::fromWCharArray(NewIconPath);
-        DEFER_EMIT(model, iconPathChanged, Q_ARG(QString, newpath));
-    }
+    QString newpath = QString::fromWCharArray(NewIconPath);
+    DEFER_EMIT(model, iconPathChanged, Q_ARG(QString, newpath));
     return S_OK;
 }
 
@@ -107,11 +102,9 @@ HRESULT SessionVolumeModel::Internal::OnSessionDisconnected(AudioSessionDisconne
 }
 
 HRESULT SessionVolumeModel::Internal::OnSimpleVolumeChanged(float NewVolume, BOOL NewMute, LPCGUID EventContext) {
-    (void)NewVolume;
-    (void)NewMute;
-    if(!IsEqualGUID(*EventContext, eventContext)) {
-        DEFER_EMIT(model, volumeChanged, Q_ARG(FLOAT, NewVolume));
-    }
+    (void)EventContext;
+    DEFER_EMIT(model, muteChanged, Q_ARG(bool, NewMute));
+    DEFER_EMIT(model, volumeChanged, Q_ARG(float, NewVolume));
     return S_OK;
 }
 
@@ -210,23 +203,27 @@ QString SessionVolumeModel::name() {
         displayname = QString::fromWCharArray(lpwDisplayName);
         CoTaskMemFree(lpwDisplayName);
     }
-    else {
-        DBG_PRINT << "Couldn't get session display name (" << hr << ")";
-        if(displayname.length() > 0) {
-            displayname = GetStringByPossibleResource(displayname);
-        }
-        else { // As usual, the display name isn't set. Time to guess.
-            DWORD pid;
-            hr = stuff->session->GetProcessId(&pid);
-            assertHR(hr, QString("Couldn't get session process id (%1)"));
-            displayname = GuessNameForPid(pid);
-        }
+    if(displayname.length() > 0) {
+        displayname = GetStringByPossibleResource(displayname);
+    }
+    else { // As usual, the display name isn't set. Time to guess.
+        DWORD pid;
+        hr = stuff->session->GetProcessId(&pid);
+        assertHR(hr, QString("Couldn't get session process id (%1)"));
+        displayname = GuessNameForPid(pid);
     }
     return displayname;
 }
 
 QString SessionVolumeModel::description() {
-    return QString("");
+    DWORD pid;
+    HRESULT hr = stuff->session->GetProcessId(&pid);
+    if(SUCCEEDED(hr) && pid != 0) {
+    return QString("pid %0").arg(pid);
+    }
+    else {
+        return QString("");
+    }
 }
 
 QString SessionVolumeModel::iconPath() {
