@@ -14,7 +14,6 @@ SOURCES += main.cpp \
     wheellessslider.cpp \
     sessioncreationsource.cpp \
     sessionmixerlistwidget.cpp \
-    sessionmixerwidget.cpp \
     getresource.cpp \
     sessionvolumemodel.cpp
 
@@ -43,7 +42,6 @@ HEADERS += \
     sessioncreationsource.h \
     comstuff.h \
     sessionmixerlistwidget.h \
-    sessionmixerwidget.h \
     getresource.h \
     sessionvolumemodel.h
 

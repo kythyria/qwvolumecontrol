@@ -44,6 +44,7 @@ public slots:
     
 public:
     virtual QString name();
+    virtual QString description();
     QString iconPath();
     
     Q_PROPERTY(QString iconPath READ iconPath WRITE setIconPath NOTIFY iconPathChanged)

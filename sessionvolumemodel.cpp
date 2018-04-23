@@ -225,6 +225,10 @@ QString SessionVolumeModel::name() {
     return displayname;
 }
 
+QString SessionVolumeModel::description() {
+    return QString("");
+}
+
 QString SessionVolumeModel::iconPath() {
     LPWSTR lpwIconPath;
     QString path;

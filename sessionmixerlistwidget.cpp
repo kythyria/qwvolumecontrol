@@ -5,7 +5,8 @@
 #include <QVBoxLayout>
 #include "util.h"
 
-#include "sessionmixerwidget.h"
+#include "sessionvolumemodel.h"
+#include "devicemixerwidget.h"
 
 class SessionMixerListWidget::Internal {
     
@@ -36,15 +37,7 @@ SessionMixerListWidget::Internal::~Internal() { }
 void SessionMixerListWidget::sessionExists(IAudioSessionControl2 *s) {
     IAudioSessionControl2Ptr session(s, true);
     
-    LPWSTR sessioniid;
-    HRESULT hr = session->GetSessionInstanceIdentifier(&sessioniid);
-    if(FAILED(hr)) {
-        qDebug() << "Failed to get session instance identifier (" << hr << ")";
-    }
-    else {
-        qDebug() << "Saw session: " << QString::fromWCharArray(sessioniid);
-        CoTaskMemFree(sessioniid);
-    }
+    auto svm = new SessionVolumeModel(session);
     
-    stuff->list->addWidget(new SessionMixerWidget(session, this));
+    stuff->list->addWidget(new DeviceMixerWidget(svm, this));
 }
