@@ -29,6 +29,7 @@ signals:
     
 private slots:
     void refresh();
+    void muteClicked(bool checked);
 };
 
 #endif // DEVICEMIXERWIDGET_H

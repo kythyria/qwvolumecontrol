@@ -59,8 +59,9 @@ DeviceMixerWidget::DeviceMixerWidget(AbstractVolumeModel *device, QWidget *paren
         stuff->vbox->addWidget(stuff->sliders);
         connect(stuff->btnLinkChannels, &QPushButton::toggled, stuff->sliders, &VolumeSliderWidget::linkChannels);
         stuff->btnLinkChannels->setChecked(true);
+        connect(stuff->btnMute, &QPushButton::clicked, stuff->dvm, &AbstractVolumeModel::setMuted);
         
-        connect(stuff->dvm, &AbstractVolumeModel::muteChanged, stuff->btnMute, &QPushButton::setChecked);
+        connect(stuff->dvm, &AbstractVolumeModel::muteChanged, this, &DeviceMixerWidget::muteClicked);
         connect(stuff->btnShowSessions, &QPushButton::clicked, this, &DeviceMixerWidget::detailButtonClicked);
     }
     
@@ -90,16 +91,18 @@ void DeviceMixerWidget::Internals::InitHeaderWidgets() {
     iconWidget = iconWidgetFrame;
     
     btnShowSessions = new QPushButton("Details");
-    btnMute = new QPushButton("Mute");
+    btnMute = new QPushButton(QString::fromWCharArray(L"\uE198")); // mute icon
+    btnMute->setFont(QFont("Segoe UI Symbol"));
+    btnMute->setCheckable(true);
     btnLinkChannels = new QPushButton("Link");
     btnLinkChannels->setCheckable(true);
     
     headerLayout = new QHBoxLayout();
     headerLayout->addWidget(iconWidget);
     headerLayout->addLayout(headerTextLayout, 1);
-    headerLayout->addWidget(btnMute, 0, Qt::AlignTop);
     headerLayout->addWidget(btnLinkChannels, 0, Qt::AlignTop);
     headerLayout->addWidget(btnShowSessions, 0, Qt::AlignTop);
+    headerLayout->addWidget(btnMute, 0, Qt::AlignTop);
     
     vbox = new QVBoxLayout();
     vbox->addLayout(headerLayout);
@@ -115,4 +118,10 @@ AbstractVolumeModel *DeviceMixerWidget::model() {
 }
 
 void DeviceMixerWidget::refresh() {
+}
+
+void DeviceMixerWidget::muteClicked(bool checked) {
+    stuff->dvm->setMuted(checked);
+    auto label = checked ? L"\uE198" : L"\uE15D";
+    stuff->btnMute->setText(QString::fromWCharArray(label));
 }
