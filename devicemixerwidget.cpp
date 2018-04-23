@@ -13,7 +13,7 @@
 #include <endpointvolume.h>
 
 #include "util.h"
-#include "devicevolumemodel.h"
+#include "abstractvolumemodel.h"
 #include "volumesliderwidget.h"
 #include "sessionmixerlistwidget.h"
 
@@ -23,7 +23,7 @@ COM_SMARTPTR(IAudioEndpointVolume);
 class DeviceMixerWidget::Internals {
 public:
     IMMDevicePtr device;
-    DeviceVolumeModel *dvm;
+    AbstractVolumeModel *dvm;
     
     QVBoxLayout *vbox;
     QHBoxLayout *headerLayout;
@@ -45,13 +45,13 @@ public:
     void PopulateHeaderWidgets();
 };
 
-DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWidget(parent) {
+DeviceMixerWidget::DeviceMixerWidget(AbstractVolumeModel *device, QWidget *parent) : QWidget(parent) {
     stuff = new Internals();
-    stuff->device = device;
     
     stuff->InitHeaderWidgets();
     
-    stuff->dvm = new DeviceVolumeModel(stuff->device, this);
+    stuff->dvm = device;
+    stuff->dvm->setParent(this);
     stuff->PopulateHeaderWidgets();
     
     if(stuff->dvm->currentlyHasVolume()) {
@@ -61,14 +61,7 @@ DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWi
         stuff->btnLinkChannels->setChecked(true);
         
         connect(stuff->dvm, &AbstractVolumeModel::muteChanged, stuff->btnMute, &QPushButton::setChecked);
-        connect(stuff->btnShowSessions, &QPushButton::clicked, this, [this]() {
-            IAudioSessionManager2Ptr iasm;
-            HRESULT hr = this->stuff->device->Activate(__uuidof(IAudioSessionManager2), CLSCTX_ALL, NULL, (void**)&iasm);
-            if(SUCCEEDED(hr)){
-                auto s = new SessionMixerListWidget(iasm);
-                s->show();
-            }
-        });
+        connect(stuff->btnShowSessions, &QPushButton::clicked, this, &DeviceMixerWidget::detailButtonClicked);
     }
     
     this->setLayout(stuff->vbox);
@@ -96,7 +89,7 @@ void DeviceMixerWidget::Internals::InitHeaderWidgets() {
     iconWidgetFrame->resize(48,48);
     iconWidget = iconWidgetFrame;
     
-    btnShowSessions = new QPushButton("Sessions");
+    btnShowSessions = new QPushButton("Details");
     btnMute = new QPushButton("Mute");
     btnLinkChannels = new QPushButton("Link");
     btnLinkChannels->setCheckable(true);
@@ -115,6 +108,10 @@ void DeviceMixerWidget::Internals::InitHeaderWidgets() {
 void DeviceMixerWidget::Internals::PopulateHeaderWidgets() {
     lblDeviceDesc->setText(dvm->description());
     lblDeviceName->setText(dvm->name());
+}
+
+AbstractVolumeModel *DeviceMixerWidget::model() {
+    return stuff->dvm;
 }
 
 void DeviceMixerWidget::refresh() {

@@ -40,6 +40,8 @@ public:
     virtual QString description();
     
     virtual bool currentlyHasVolume();
+    
+    IMMDevicePtr device();
 };
 
 #endif // DEVICEVOLUMEMODEL_H

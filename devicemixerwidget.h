@@ -6,6 +6,7 @@
 
 #include <mmdeviceapi.h>
 #include "comstuff.h"
+#include "abstractvolumemodel.h"
 
 COM_SMARTPTR(IMMDevice);
 
@@ -18,10 +19,13 @@ class DeviceMixerWidget : public QWidget
     Internals *stuff;
     
 public:
-    explicit DeviceMixerWidget(IMMDevicePtr device, QWidget *parent = 0);
+    explicit DeviceMixerWidget(AbstractVolumeModel *device, QWidget *parent = 0);
     virtual ~DeviceMixerWidget();
     
+    AbstractVolumeModel *model();
+    
 signals:
+    void detailButtonClicked();
     
 private slots:
     void refresh();

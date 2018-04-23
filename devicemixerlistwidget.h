@@ -16,12 +16,13 @@ class DeviceMixerListWidget : public QWidget
     std::unique_ptr<DeviceMixerListWidget_internal> stuff;
     
 public:
-    explicit DeviceMixerListWidget(IMMDeviceCollectionPtr devices, QWidget *parent = 0);
+    explicit DeviceMixerListWidget(IMMDeviceCollectionPtr device, QWidget *parent = 0);
     virtual ~DeviceMixerListWidget();
 signals:
     
 public slots:
     void UpdateListing();
+    void showSessions();
 };
 
 #endif // DEVICEMIXERLISTWIDGET_H

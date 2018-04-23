@@ -196,3 +196,7 @@ bool DeviceVolumeModel::currentlyHasVolume() {
     
     return SUCCEEDED(hr) && state == DEVICE_STATE_ACTIVE;
 }
+
+IMMDevicePtr DeviceVolumeModel::device() {
+    return stuff->device;
+}

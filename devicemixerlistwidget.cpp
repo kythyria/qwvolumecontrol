@@ -6,8 +6,12 @@
 
 #include "util.h"
 #include "devicemixerwidget.h"
+#include "devicevolumemodel.h"
+#include "audiopolicy.h"
+#include "sessionmixerlistwidget.h"
 
 COM_SMARTPTR(IMMDevice);
+COM_SMARTPTR(IAudioSessionManager2);
 
 class DeviceMixerListWidget_internal {
 public:
@@ -25,6 +29,8 @@ DeviceMixerListWidget::DeviceMixerListWidget(IMMDeviceCollectionPtr devices, QWi
     
     UpdateListing();
 }
+
+DeviceMixerListWidget::~DeviceMixerListWidget() { }
 
 void DeviceMixerListWidget::UpdateListing() {
     QLayoutItem *child;
@@ -44,9 +50,22 @@ void DeviceMixerListWidget::UpdateListing() {
             return;
         }
         
-        DeviceMixerWidget *dmw = new DeviceMixerWidget(dev);
+        auto dvm = new DeviceVolumeModel(dev);
+        
+        DeviceMixerWidget *dmw = new DeviceMixerWidget(dvm);
+        connect(dmw, &DeviceMixerWidget::detailButtonClicked, this, &DeviceMixerListWidget::showSessions);
         stuff->vbox->addWidget(dmw);
     }
 }
 
-DeviceMixerListWidget::~DeviceMixerListWidget() { }
+void DeviceMixerListWidget::showSessions() {
+    auto dmw = (DeviceMixerWidget*)sender();
+    auto dvm = dynamic_cast<DeviceVolumeModel*>(dmw->model());
+    
+    IAudioSessionManager2Ptr iasm;
+    HRESULT hr = dvm->device()->Activate(__uuidof(IAudioSessionManager2), CLSCTX_ALL, NULL, (void**)&iasm);
+    if(SUCCEEDED(hr)){
+        auto s = new SessionMixerListWidget(iasm);
+        s->show();
+    }
+}
