@@ -23,7 +23,6 @@ COM_SMARTPTR(IAudioEndpointVolume);
 class DeviceMixerWidget::Internals {
 public:
     IMMDevicePtr device;
-    IAudioEndpointVolumePtr volume;
     DeviceVolumeModel *dvm;
     
     QVBoxLayout *vbox;
@@ -51,26 +50,17 @@ DeviceMixerWidget::DeviceMixerWidget(IMMDevicePtr device, QWidget *parent) : QWi
     stuff->device = device;
     
     stuff->InitHeaderWidgets();
-    stuff->PopulateHeaderWidgets();
-    
-    DWORD state;
-    HRESULT hr = device->GetState(&state);
     
     stuff->dvm = new DeviceVolumeModel(stuff->device, this);
+    stuff->PopulateHeaderWidgets();
     
     if(stuff->dvm->currentlyHasVolume()) {
-        IAudioEndpointVolume **paev = &(stuff->volume);
-        HRESULT hr = device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, (void**)paev);
-        AlertHresult(hr, QString("Unable to open the volume control for %0 (%1)").arg(stuff->lblDeviceName->text()));
-        
-        
-        
         stuff->sliders = new VolumeSliderWidget(stuff->dvm);
         stuff->vbox->addWidget(stuff->sliders);
         connect(stuff->btnLinkChannels, &QPushButton::toggled, stuff->sliders, &VolumeSliderWidget::linkChannels);
         stuff->btnLinkChannels->setChecked(true);
         
-        connect(stuff->dvm, &DeviceVolumeModel::volumeChanged, this, &DeviceMixerWidget::refresh);
+        connect(stuff->dvm, &AbstractVolumeModel::muteChanged, stuff->btnMute, &QPushButton::setChecked);
         connect(stuff->btnShowSessions, &QPushButton::clicked, this, [this]() {
             IAudioSessionManager2Ptr iasm;
             HRESULT hr = this->stuff->device->Activate(__uuidof(IAudioSessionManager2), CLSCTX_ALL, NULL, (void**)&iasm);
@@ -123,25 +113,8 @@ void DeviceMixerWidget::Internals::InitHeaderWidgets() {
 }
 
 void DeviceMixerWidget::Internals::PopulateHeaderWidgets() {
-    IPropertyStorePtr props;
-    HRESULT hr;
-    hr = device->OpenPropertyStore(STGM_READ, &props);
-    
-    assertHR(hr, "Couldn't open device property store (%0)");
-    
-    PROPVARIANT pv;
-    
-    hr = props->GetValue(PKEY_Device_DeviceDesc, &pv);
-    assertHR(hr, "Couldn't get device description (%0)");
-    lblDeviceDesc->setText(QString::fromWCharArray(pv.pwszVal));
-    PropVariantClear(&pv);
-    
-    hr = props->GetValue(PKEY_DeviceInterface_FriendlyName, &pv);
-    //if(AlertHresult(hr, QString("Couldn't get device friendly name for %0 (%1)").arg(lblDeviceDesc->text()))) {
-    if(SUCCEEDED(hr)) {
-        lblDeviceName->setText(QString::fromWCharArray(pv.pwszVal));
-    }
-    PropVariantClear(&pv);
+    lblDeviceDesc->setText(dvm->description());
+    lblDeviceName->setText(dvm->name());
 }
 
 void DeviceMixerWidget::refresh() {

@@ -106,7 +106,7 @@ DeviceVolumeModel::Internal::Internal(DeviceVolumeModel *owner) :
 { }
 
 HRESULT DeviceVolumeModel::Internal::OnNotify(PAUDIO_VOLUME_NOTIFICATION_DATA pNotify) {
-    (void)
+    owner->metaObject()->invokeMethod(owner, "muteChanged", Qt::QueuedConnection, Q_ARG(bool, pNotify->bMuted));
     owner->metaObject()->invokeMethod(owner, "volumeChanged", Qt::QueuedConnection, Q_ARG(float, pNotify->fMasterVolume));
     return S_OK;
 }

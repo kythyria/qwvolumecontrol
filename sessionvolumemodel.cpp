@@ -13,6 +13,7 @@ class SessionVolumeModel::Internal : public IAudioSessionEvents {
     
 public:
     IAudioSessionControl2Ptr session;
+    ISimpleAudioVolumePtr volume;
     SessionVolumeModel *model;
     GUID eventContext;
     
@@ -38,6 +39,12 @@ SessionVolumeModel::SessionVolumeModel(IAudioSessionControl2Ptr session, QObject
 {
     stuff = new Internal(session, this);
     CoCreateGuid(&stuff->eventContext);
+    
+    HRESULT hr = session->QueryInterface(&stuff->volume);
+    if(FAILED(hr)) {
+        stuff->volume = nullptr;
+        DBG_PRINT << "Unable to get volume control for session (" << hr << ")";
+    }
 }
 
 SessionVolumeModel::~SessionVolumeModel() {
@@ -114,35 +121,77 @@ HRESULT SessionVolumeModel::Internal::OnStateChanged(AudioSessionState NewState)
 }
 
 uint SessionVolumeModel::channelCount() {
+    if(stuff->volume.GetInterfacePtr()) {
+        return 1;
+    }
     return 0;
 }
 
 uint SessionVolumeModel::channelLayoutMask() {
-    return 0;
+    return KSAUDIO_SPEAKER_MONO; // wrong, but we don't have one for idk
 }
 
 float SessionVolumeModel::channelVolume(uint channel) {
-    return 0;
+    if(channel == 0) {
+        return this->volume();
+    }
+    return 0.0f;
 }
 
 void SessionVolumeModel::setChannelVolume(uint channel, float volume) {
-    
+    if(channel == 0) {
+        this->setVolume(volume);
+    }
 }
 
 float SessionVolumeModel::volume() {
-    return 0;
+    if(stuff->volume.GetInterfacePtr()) {
+        float vol;
+        HRESULT hr = stuff->volume->GetMasterVolume(&vol);
+        if(SUCCEEDED(hr)) {
+            return vol;
+        }
+        else {
+            DBG_PRINT << "Couldn't get session volume (" << hr << ")";
+        }
+    }
+    return 0.0f;
 }
 
 void SessionVolumeModel::setVolume(float volume) {
-    
+    if(stuff->volume.GetInterfacePtr()) {
+        HRESULT hr = stuff->volume->SetMasterVolume(volume, &stuff->eventContext);
+        if(FAILED(hr)) {
+            DBG_PRINT << "Couldn't set session volume (" << hr << ")";
+        }
+    }
 }
 
 bool SessionVolumeModel::muted() {
-    return true;
+    if(stuff->volume.GetInterfacePtr()) {
+        BOOL mute;
+        HRESULT hr = stuff->volume->GetMute(&mute);
+        if(SUCCEEDED(hr)) {
+            return mute;
+        }
+        else {
+            DBG_PRINT << "Couldn't get session mutedness (" << hr << ")";
+        }
+    }
+    return false;
 }
 
 void SessionVolumeModel::setMuted(bool muted) {
-    
+    if(stuff->volume.GetInterfacePtr()) {
+        HRESULT hr = stuff->volume->SetMute(muted, &stuff->eventContext);
+        if(FAILED(hr)) {
+            DBG_PRINT << "Couldn't set session mutedness (" << hr << ")";
+        }
+    }
+}
+
+bool SessionVolumeModel::currentlyHasVolume() {
+    return stuff->volume.GetInterfacePtr() != nullptr;
 }
 
 void SessionVolumeModel::setName(QString newName) {

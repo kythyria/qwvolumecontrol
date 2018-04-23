@@ -31,6 +31,8 @@ public:
     virtual bool muted();
     virtual void setMuted(bool muted);
     
+    virtual bool currentlyHasVolume();
+    
 signals:
     void iconPathChanged(QString newIconPath);
     void sessionDisconnected();

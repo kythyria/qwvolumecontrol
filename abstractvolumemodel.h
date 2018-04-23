@@ -9,7 +9,7 @@ class AbstractVolumeModel : public QObject
     
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(float volume READ volume WRITE setVolume NOTIFY volumeChanged)
-    Q_PROPERTY(bool muted READ muted WRITE setMuted)
+    Q_PROPERTY(bool muted READ muted WRITE setMuted NOTIFY muteChanged)
     Q_PROPERTY(float decibels READ decibels WRITE setDecibels)
     
 public:
@@ -38,6 +38,7 @@ public:
 signals:
     void volumeChanged(float volume);
     void nameChanged(QString newName);
+    void muteChanged(bool newMute);
     
 public slots:
     virtual void setVolume(float volume) = 0;
