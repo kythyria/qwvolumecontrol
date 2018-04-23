@@ -182,12 +182,15 @@ void DeviceVolumeModel::setMuted(bool muted) {
     stuff->vol->SetMute(muted, NULL);
 }
 
+// No, these aren't backwards. For some reason the "name" of the device as identified
+// by windows' choices of what to display where is in the description.
+
 QString DeviceVolumeModel::name() {
-    return stuff->deviceName;
+    return stuff->deviceDescription;
 }
 
 QString DeviceVolumeModel::description() {
-    return stuff->deviceDescription;
+    return stuff->deviceName;
 }
 
 bool DeviceVolumeModel::currentlyHasVolume() {

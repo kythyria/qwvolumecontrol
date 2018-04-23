@@ -74,11 +74,11 @@ DeviceMixerWidget::~DeviceMixerWidget() {
 void DeviceMixerWidget::Internals::InitHeaderWidgets() {
     lblDeviceDesc = new QLabel("Device Description");
     lblDeviceName = new QLabel("(Unknown Device)");
-    lblStatus = new QLabel("Status");
+    lblStatus = new QLabel("");//("Status");
     
     headerTextLayout = new QVBoxLayout();
-    headerTextLayout->addWidget(lblDeviceDesc);
     headerTextLayout->addWidget(lblDeviceName);
+    headerTextLayout->addWidget(lblDeviceDesc);
     headerTextLayout->addWidget(lblStatus);
     
     QFrame *iconWidgetFrame = new QFrame();
