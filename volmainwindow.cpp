@@ -62,12 +62,12 @@ VolMainWindow::VolMainWindow(QWidget *parent) : QMainWindow(parent) {
     
     IMMDeviceCollectionPtr col;
     
-    hr = stuff->devenum->EnumAudioEndpoints(eRender, DEVICE_STATEMASK_ALL, &col);
+    hr = stuff->devenum->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &col);
     assertHR(hr, "Couldn't enumerate output devices (%0)");
     
     stuff->playbackPage->setWidget(new DeviceMixerListWidget(col));
     
-    hr = stuff->devenum->EnumAudioEndpoints(eCapture, DEVICE_STATEMASK_ALL, &col);
+    hr = stuff->devenum->EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE, &col);
     assertHR(hr, "Couldn't enumerate input devices (%0)");
     
     stuff->recordingPage->setWidget(new DeviceMixerListWidget(col));
