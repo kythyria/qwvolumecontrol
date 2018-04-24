@@ -9,6 +9,7 @@
 #include "abstractvolumemodel.h"
 
 COM_SMARTPTR(IMMDevice);
+class QAbstractItemModel;
 
 class DeviceMixerWidget : public QWidget
 {
@@ -23,13 +24,20 @@ public:
     virtual ~DeviceMixerWidget();
     
     QSharedPointer<AbstractVolumeModel> model();
+    void setModel(QSharedPointer<AbstractVolumeModel>);
+    
+    QAbstractItemModel *selectorModel();
+    void setSelectorModel(QAbstractItemModel *items);
+    void clearSelectorModel();
     
 signals:
     void detailButtonClicked();
+    void selectedIndexChanged(int index);
     
 private slots:
     void refresh();
     void muteClicked(bool checked);
+    void selectedIndexChanged_internal(int index);
 };
 
 #endif // DEVICEMIXERWIDGET_H

@@ -8,6 +8,8 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QSlider>
+#include <QAbstractItemModel>
+#include <QComboBox>
 
 #include <Functiondiscoverykeys_devpkey.h>
 #include <endpointvolume.h>
@@ -24,6 +26,7 @@ class DeviceMixerWidget::Internals {
 public:
     IMMDevicePtr device;
     QSharedPointer<AbstractVolumeModel> dvm;
+    QAbstractItemModel *selectorModel;
     
     QVBoxLayout *vbox;
     QHBoxLayout *headerLayout;
@@ -31,8 +34,9 @@ public:
     
     QWidget *iconWidget;
     
-    QLabel *lblDeviceDesc;
+    QComboBox *cbxDeviceName;
     QLabel *lblDeviceName;
+    QLabel *lblDeviceDesc;
     QLabel *lblStatus;
     
     QPushButton *btnShowSessions;
@@ -42,28 +46,17 @@ public:
     VolumeSliderWidget *sliders;
     
     void InitHeaderWidgets();
-    void PopulateHeaderWidgets();
 };
 
-DeviceMixerWidget::DeviceMixerWidget(QSharedPointer<AbstractVolumeModel> device, QWidget *parent) : QWidget(parent) {
+DeviceMixerWidget::DeviceMixerWidget(QSharedPointer<AbstractVolumeModel> device, QWidget *parent) :
+    QWidget(parent)
+{
     stuff = new Internals();
+    stuff->selectorModel = nullptr;
     
     stuff->InitHeaderWidgets();
     
-    stuff->dvm = device;
-    stuff->dvm->setParent(this);
-    stuff->PopulateHeaderWidgets();
-    
-    if(stuff->dvm->currentlyHasVolume()) {
-        stuff->sliders = new VolumeSliderWidget(stuff->dvm);
-        stuff->vbox->addWidget(stuff->sliders);
-        connect(stuff->btnLinkChannels, &QPushButton::toggled, stuff->sliders, &VolumeSliderWidget::linkChannels);
-        stuff->btnLinkChannels->setChecked(true);
-        connect(stuff->btnMute, &QPushButton::clicked, stuff->dvm.data(), &AbstractVolumeModel::setMuted);
-        
-        connect(stuff->dvm.data(), &AbstractVolumeModel::muteChanged, this, &DeviceMixerWidget::muteClicked);
-        connect(stuff->btnShowSessions, &QPushButton::clicked, this, &DeviceMixerWidget::detailButtonClicked);
-    }
+    setModel(device);
     
     this->setLayout(stuff->vbox);
 }
@@ -73,11 +66,14 @@ DeviceMixerWidget::~DeviceMixerWidget() {
 }
 
 void DeviceMixerWidget::Internals::InitHeaderWidgets() {
+    cbxDeviceName = new QComboBox();
     lblDeviceDesc = new QLabel("Device Description");
     lblDeviceName = new QLabel("(Unknown Device)");
     lblStatus = new QLabel("");//("Status");
     
     headerTextLayout = new QVBoxLayout();
+    headerTextLayout->addWidget(cbxDeviceName);
+    cbxDeviceName->hide();
     headerTextLayout->addWidget(lblDeviceName);
     headerTextLayout->addWidget(lblDeviceDesc);
     headerTextLayout->addWidget(lblStatus);
@@ -108,9 +104,28 @@ void DeviceMixerWidget::Internals::InitHeaderWidgets() {
     vbox->addLayout(headerLayout);
 }
 
-void DeviceMixerWidget::Internals::PopulateHeaderWidgets() {
-    lblDeviceDesc->setText(dvm->description());
-    lblDeviceName->setText(dvm->name());
+void DeviceMixerWidget::setModel(QSharedPointer<AbstractVolumeModel> newModel) {
+    if (stuff->sliders) {
+        stuff->vbox->removeWidget(stuff->sliders);
+        delete stuff->sliders;
+    }
+    
+    stuff->dvm.clear();
+    stuff->dvm = newModel;
+    
+    stuff->lblDeviceDesc->setText(stuff->dvm->description());
+    stuff->lblDeviceName->setText(stuff->dvm->name());
+    
+    if(stuff->dvm->currentlyHasVolume()) {
+        stuff->sliders = new VolumeSliderWidget(stuff->dvm);
+        stuff->vbox->addWidget(stuff->sliders);
+        connect(stuff->btnLinkChannels, &QPushButton::toggled, stuff->sliders, &VolumeSliderWidget::linkChannels);
+        stuff->btnLinkChannels->setChecked(true);
+        connect(stuff->btnMute, &QPushButton::clicked, stuff->dvm.data(), &AbstractVolumeModel::setMuted);
+        
+        connect(stuff->dvm.data(), &AbstractVolumeModel::muteChanged, this, &DeviceMixerWidget::muteClicked);
+        connect(stuff->btnShowSessions, &QPushButton::clicked, this, &DeviceMixerWidget::detailButtonClicked);
+    }
 }
 
 QSharedPointer<AbstractVolumeModel> DeviceMixerWidget::model() {
@@ -124,4 +139,33 @@ void DeviceMixerWidget::muteClicked(bool checked) {
     stuff->dvm->setMuted(checked);
     auto label = checked ? L"\uE198" : L"\uE15D";
     stuff->btnMute->setText(QString::fromWCharArray(label));
+}
+
+QAbstractItemModel *DeviceMixerWidget::selectorModel() {
+    return stuff->selectorModel;
+}
+
+void DeviceMixerWidget::setSelectorModel(QAbstractItemModel *items) {
+    if(!stuff->selectorModel) {
+        stuff->lblDeviceName->hide();
+        stuff->cbxDeviceName->show();
+    }
+    stuff->selectorModel = items;
+    stuff->cbxDeviceName->setModel(items);
+    stuff->cbxDeviceName->setCurrentIndex(0);
+}
+
+void DeviceMixerWidget::clearSelectorModel() {
+    stuff->cbxDeviceName->hide();
+    stuff->lblDeviceName->show();
+    stuff->selectorModel = nullptr;
+}
+
+void DeviceMixerWidget::selectedIndexChanged_internal(int index) {
+    auto qi = stuff->selectorModel->index(index, 0);
+    auto qv = stuff->selectorModel->data(qi, Qt::UserRole);
+    auto volumemodel = qv.value<QSharedPointer<AbstractVolumeModel>>();
+    
+    setModel(volumemodel);
+    emit selectedIndexChanged(index);
 }

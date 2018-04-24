@@ -15,7 +15,8 @@ SOURCES += main.cpp \
     sessioncreationsource.cpp \
     sessionmixerlistwidget.cpp \
     getresource.cpp \
-    sessionvolumemodel.cpp
+    sessionvolumemodel.cpp \
+    devicecollectionmodel.cpp
 
 RESOURCES += \
     resources.qrc
@@ -43,7 +44,8 @@ HEADERS += \
     comstuff.h \
     sessionmixerlistwidget.h \
     getresource.h \
-    sessionvolumemodel.h
+    sessionvolumemodel.h \
+    devicecollectionmodel.h
 
 DISTFILES += \
     .astylerc \
