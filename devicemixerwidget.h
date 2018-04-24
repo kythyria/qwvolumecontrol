@@ -19,8 +19,11 @@ class DeviceMixerWidget : public QWidget
     
     Internals *stuff;
     
+    DeviceMixerWidget(QWidget *parent = 0);
+    
 public:
     explicit DeviceMixerWidget(QSharedPointer<AbstractVolumeModel> device, QWidget *parent = 0);
+    explicit DeviceMixerWidget(QAbstractItemModel *devices, QWidget *parent = 0);
     virtual ~DeviceMixerWidget();
     
     QSharedPointer<AbstractVolumeModel> model();

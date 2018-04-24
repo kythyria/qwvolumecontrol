@@ -48,17 +48,25 @@ public:
     void InitHeaderWidgets();
 };
 
-DeviceMixerWidget::DeviceMixerWidget(QSharedPointer<AbstractVolumeModel> device, QWidget *parent) :
-    QWidget(parent)
-{
+DeviceMixerWidget::DeviceMixerWidget(QWidget *parent) : QWidget(parent) {
     stuff = new Internals();
     stuff->selectorModel = nullptr;
-    
     stuff->InitHeaderWidgets();
-    
-    setModel(device);
-    
     this->setLayout(stuff->vbox);
+    connect(stuff->cbxDeviceName, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DeviceMixerWidget::selectedIndexChanged_internal);
+    
+}
+
+DeviceMixerWidget::DeviceMixerWidget(QSharedPointer<AbstractVolumeModel> device, QWidget *parent) :
+    DeviceMixerWidget(parent)
+{
+    setModel(device);
+}
+
+DeviceMixerWidget::DeviceMixerWidget(QAbstractItemModel *devices, QWidget *parent) :
+    DeviceMixerWidget(parent)
+{
+    setSelectorModel(devices);
 }
 
 DeviceMixerWidget::~DeviceMixerWidget() {

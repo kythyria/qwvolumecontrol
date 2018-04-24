@@ -16,7 +16,8 @@ SOURCES += main.cpp \
     sessionmixerlistwidget.cpp \
     getresource.cpp \
     sessionvolumemodel.cpp \
-    devicecollectionmodel.cpp
+    devicecollectionmodel.cpp \
+    devicemixerbankwidget.cpp
 
 RESOURCES += \
     resources.qrc
@@ -45,7 +46,8 @@ HEADERS += \
     sessionmixerlistwidget.h \
     getresource.h \
     sessionvolumemodel.h \
-    devicecollectionmodel.h
+    devicecollectionmodel.h \
+    devicemixerbankwidget.h
 
 DISTFILES += \
     .astylerc \

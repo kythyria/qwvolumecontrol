@@ -57,7 +57,7 @@ QVariant DeviceCollectionModel::data(const QModelIndex &index, int role) const {
         return QString("%0 (%1)").arg(item->name()).arg(item->description());
         
     case Qt::UserRole:
-        return QVariant::fromValue(item);
+        return QVariant::fromValue(qSharedPointerDynamicCast<AbstractVolumeModel>(item));
         
     default:
         return QVariant();

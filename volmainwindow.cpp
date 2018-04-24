@@ -6,6 +6,8 @@
 #include <mmdeviceapi.h>
 
 #include "devicemixerlistwidget.h"
+#include "devicemixerbankwidget.h"
+#include "devicecollectionmodel.h"
 #include "util.h"
 #include "comstuff.h"
 
@@ -19,19 +21,20 @@ class VolMainWindow_internal {
 public:
     VolMainWindow *self;
     QTabWidget *tabs;
-    QScrollArea *playbackPage;
+    //QScrollArea *playbackPage;
+    DeviceMixerBankWidget *playbackPage;
     QScrollArea *recordingPage;
     QScrollArea *deviceDetailPage;
     QWidget *optionPage;
     
     IMMDeviceEnumeratorPtr devenum;
     
+    DeviceCollectionModel *playbackDevices;
+    
     VolMainWindow_internal(VolMainWindow *window);
 };
 
 VolMainWindow_internal::VolMainWindow_internal(VolMainWindow *window) {
-    playbackPage     = new QScrollArea();
-    playbackPage->setWidgetResizable(true);
     
     recordingPage    = new QScrollArea();
     recordingPage->setWidgetResizable(true);
@@ -40,7 +43,6 @@ VolMainWindow_internal::VolMainWindow_internal(VolMainWindow *window) {
     optionPage       = new QWidget();
     
     tabs = new QTabWidget();
-    tabs->addTab(playbackPage, "Playback");
     tabs->addTab(recordingPage, "Recording");
     tabs->addTab(deviceDetailPage, "Device Details");
     tabs->addTab(optionPage, "Options");
@@ -62,10 +64,9 @@ VolMainWindow::VolMainWindow(QWidget *parent) : QMainWindow(parent) {
     
     IMMDeviceCollectionPtr col;
     
-    hr = stuff->devenum->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &col);
-    assertHR(hr, "Couldn't enumerate output devices (%0)");
-    
-    stuff->playbackPage->setWidget(new DeviceMixerListWidget(col));
+    stuff->playbackDevices = new DeviceCollectionModel(stuff->devenum, eRender, DEVICE_STATE_ACTIVE);
+    stuff->playbackPage = new DeviceMixerBankWidget(stuff->playbackDevices);
+    stuff->tabs->addTab(stuff->playbackPage, "Playback");
     
     hr = stuff->devenum->EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE, &col);
     assertHR(hr, "Couldn't enumerate input devices (%0)");
