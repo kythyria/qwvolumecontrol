@@ -29,7 +29,7 @@ public:
 };
 
 SessionCreationSource::SessionNotificationCallback::SessionNotificationCallback(SessionCreationSource *src) :
-    refcount(0),
+    refcount(1),
     manager(src)
 { }
 
@@ -103,7 +103,7 @@ SessionCreationSource::SessionCreationSource(IAudioSessionManager2Ptr sessionMan
 
 SessionCreationSource::~SessionCreationSource() {
     this->manager->UnregisterSessionNotification(this->callback_as_callback);
-    delete this->callback;
+    this->callback->Release();
 }
 
 void SessionCreationSource::notificationTrampolineLanding(IAudioSessionControl2 *session) {
