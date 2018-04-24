@@ -10,7 +10,7 @@
 
 #include "volumesliderwidgetinternal.h"
 
-VolumeSliderWidget::VolumeSliderWidget(AbstractVolumeModel *model, QWidget *parent) : QWidget(parent) {
+VolumeSliderWidget::VolumeSliderWidget(QSharedPointer<AbstractVolumeModel> model, QWidget *parent) : QWidget(parent) {
     stuff = new Internal(model, this);
 }
 
@@ -18,7 +18,7 @@ VolumeSliderWidget::~VolumeSliderWidget() {
     delete stuff;
 }
 
-AbstractVolumeModel* VolumeSliderWidget::volumeModel() {
+QSharedPointer<AbstractVolumeModel> VolumeSliderWidget::volumeModel() {
     return stuff->model;
 }
 

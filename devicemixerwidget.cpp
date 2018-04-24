@@ -23,7 +23,7 @@ COM_SMARTPTR(IAudioEndpointVolume);
 class DeviceMixerWidget::Internals {
 public:
     IMMDevicePtr device;
-    AbstractVolumeModel *dvm;
+    QSharedPointer<AbstractVolumeModel> dvm;
     
     QVBoxLayout *vbox;
     QHBoxLayout *headerLayout;
@@ -45,7 +45,7 @@ public:
     void PopulateHeaderWidgets();
 };
 
-DeviceMixerWidget::DeviceMixerWidget(AbstractVolumeModel *device, QWidget *parent) : QWidget(parent) {
+DeviceMixerWidget::DeviceMixerWidget(QSharedPointer<AbstractVolumeModel> device, QWidget *parent) : QWidget(parent) {
     stuff = new Internals();
     
     stuff->InitHeaderWidgets();
@@ -59,9 +59,9 @@ DeviceMixerWidget::DeviceMixerWidget(AbstractVolumeModel *device, QWidget *paren
         stuff->vbox->addWidget(stuff->sliders);
         connect(stuff->btnLinkChannels, &QPushButton::toggled, stuff->sliders, &VolumeSliderWidget::linkChannels);
         stuff->btnLinkChannels->setChecked(true);
-        connect(stuff->btnMute, &QPushButton::clicked, stuff->dvm, &AbstractVolumeModel::setMuted);
+        connect(stuff->btnMute, &QPushButton::clicked, stuff->dvm.data(), &AbstractVolumeModel::setMuted);
         
-        connect(stuff->dvm, &AbstractVolumeModel::muteChanged, this, &DeviceMixerWidget::muteClicked);
+        connect(stuff->dvm.data(), &AbstractVolumeModel::muteChanged, this, &DeviceMixerWidget::muteClicked);
         connect(stuff->btnShowSessions, &QPushButton::clicked, this, &DeviceMixerWidget::detailButtonClicked);
     }
     
@@ -113,7 +113,7 @@ void DeviceMixerWidget::Internals::PopulateHeaderWidgets() {
     lblDeviceName->setText(dvm->name());
 }
 
-AbstractVolumeModel *DeviceMixerWidget::model() {
+QSharedPointer<AbstractVolumeModel> DeviceMixerWidget::model() {
     return stuff->dvm;
 }
 

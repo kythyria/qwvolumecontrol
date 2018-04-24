@@ -16,7 +16,7 @@
 #define SCALE 500
 #define SCALEF SCALE##.0f
 
-VolumeSliderWidget::Internal::Internal(AbstractVolumeModel *model, VolumeSliderWidget *parent)
+VolumeSliderWidget::Internal::Internal(QSharedPointer<AbstractVolumeModel> model, VolumeSliderWidget *parent)
     : QObject(parent), model(0), linked(false)
 {
     grid = new QGridLayout();
@@ -33,10 +33,10 @@ VolumeSliderWidget::Internal::~Internal() {
     destroyChannels();
 }
 
-void VolumeSliderWidget::Internal::setVolumeModel(AbstractVolumeModel *model) {
+void VolumeSliderWidget::Internal::setVolumeModel(QSharedPointer<AbstractVolumeModel> model) {
     if(this->model) {
         destroyChannels();
-        disconnect(this->model, &AbstractVolumeModel::volumeChanged, this, &Internal::modelUpdated);
+        disconnect(this->model.data(), &AbstractVolumeModel::volumeChanged, this, &Internal::modelUpdated);
         model = 0;
     }
     
@@ -44,7 +44,7 @@ void VolumeSliderWidget::Internal::setVolumeModel(AbstractVolumeModel *model) {
     initChannels();
     modelUpdated();
     
-    connect(this->model, &AbstractVolumeModel::volumeChanged, this, &Internal::modelUpdated);
+    connect(this->model.data(), &AbstractVolumeModel::volumeChanged, this, &Internal::modelUpdated);
 }
 
 void VolumeSliderWidget::Internal::initChannels() {

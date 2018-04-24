@@ -11,11 +11,11 @@ class VolumeSliderWidget : public QWidget
     Internal *stuff;
     
 public:
-    explicit VolumeSliderWidget(AbstractVolumeModel *model, QWidget *parent = 0);
+    explicit VolumeSliderWidget(QSharedPointer<AbstractVolumeModel> model, QWidget *parent = 0);
     virtual ~VolumeSliderWidget();
     
-    AbstractVolumeModel *volumeModel();
-    void setVolumeModel(AbstractVolumeModel *model);
+    QSharedPointer<AbstractVolumeModel> volumeModel();
+    void setVolumeModel(QSharedPointer<AbstractVolumeModel> model);
     
 public slots:
     void linkChannels(bool linked);

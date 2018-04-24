@@ -37,7 +37,7 @@ SessionMixerListWidget::Internal::~Internal() { }
 void SessionMixerListWidget::sessionExists(IAudioSessionControl2 *s) {
     IAudioSessionControl2Ptr session(s, true);
     
-    auto svm = new SessionVolumeModel(session);
+    QSharedPointer<AbstractVolumeModel> svm(new SessionVolumeModel(session));
     
     stuff->list->addWidget(new DeviceMixerWidget(svm, this));
 }

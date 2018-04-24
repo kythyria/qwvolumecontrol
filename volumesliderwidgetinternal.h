@@ -18,7 +18,7 @@ class VolumeSliderWidget::Internal : public QObject
     
     friend class VolumeSliderWidget;
     
-    AbstractVolumeModel *model;
+    QSharedPointer<AbstractVolumeModel> model;
     
     class SliderRow {
         QGridLayout *grid;
@@ -48,10 +48,10 @@ class VolumeSliderWidget::Internal : public QObject
     void destroyChannels();
     
 public:
-    explicit Internal(AbstractVolumeModel *model, VolumeSliderWidget *parent);
+    explicit Internal(QSharedPointer<AbstractVolumeModel> model, VolumeSliderWidget *parent);
     virtual ~Internal();
     
-    void setVolumeModel(AbstractVolumeModel *model);
+    void setVolumeModel(QSharedPointer<AbstractVolumeModel> model);
     
 signals:
     

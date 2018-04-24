@@ -50,7 +50,7 @@ void DeviceMixerListWidget::UpdateListing() {
             return;
         }
         
-        auto dvm = new DeviceVolumeModel(dev);
+        QSharedPointer<DeviceVolumeModel> dvm(new DeviceVolumeModel(dev));
         
         DeviceMixerWidget *dmw = new DeviceMixerWidget(dvm);
         connect(dmw, &DeviceMixerWidget::detailButtonClicked, this, &DeviceMixerListWidget::showSessions);
@@ -60,7 +60,7 @@ void DeviceMixerListWidget::UpdateListing() {
 
 void DeviceMixerListWidget::showSessions() {
     auto dmw = (DeviceMixerWidget*)sender();
-    auto dvm = dynamic_cast<DeviceVolumeModel*>(dmw->model());
+    auto dvm = qSharedPointerDynamicCast<DeviceVolumeModel>(dmw->model());
     
     IAudioSessionManager2Ptr iasm;
     HRESULT hr = dvm->device()->Activate(__uuidof(IAudioSessionManager2), CLSCTX_ALL, NULL, (void**)&iasm);
