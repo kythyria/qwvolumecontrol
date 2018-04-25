@@ -5,7 +5,9 @@
 #include "devicevolumemodel.h"
 
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QScrollArea>
+#include <QStyle>
 
 class DeviceMixerBankWidget::Internal {
 public:
@@ -13,6 +15,7 @@ public:
     QSharedPointer<AbstractVolumeModel> currentDevice;
     
     QVBoxLayout *layout;
+    QHBoxLayout *devicemixerpad;
     DeviceMixerWidget *devicemixer;
     QScrollArea *sessionBankArea;
     
@@ -29,8 +32,17 @@ DeviceMixerBankWidget::DeviceMixerBankWidget(QAbstractItemModel *devices, QWidge
     stuff->devicemixer = new DeviceMixerWidget(stuff->devices);
     stuff->sessionBankArea = new QScrollArea();
     stuff->sessionBankArea->setWidgetResizable(true);
+    stuff->sessionBankArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    stuff->sessionBankArea->setStyleSheet("QScrollArea { border-top: 1px solid palette(shadow); }");
     
-    stuff->layout->addWidget(stuff->devicemixer);
+    stuff->devicemixerpad = new QHBoxLayout();
+    stuff->devicemixerpad->addWidget(stuff->devicemixer);
+    
+    auto sty = style();
+    int scrollbarwidth = sty->pixelMetric(QStyle::PM_ScrollBarExtent);
+    stuff->devicemixerpad->addSpacing(scrollbarwidth);
+    
+    stuff->layout->addLayout(stuff->devicemixerpad);
     stuff->layout->addWidget(stuff->sessionBankArea, 1);
     
     connect(stuff->devicemixer, &DeviceMixerWidget::selectedIndexChanged, this, &DeviceMixerBankWidget::selectedDeviceChanged_internal);
@@ -47,6 +59,7 @@ void DeviceMixerBankWidget::Internal::setSessionDisplay() {
     if(SUCCEEDED(hr)){
         auto s = new SessionMixerListWidget(iasm);
         sessionBankArea->setWidget(s);
+        s->setAutoFillBackground(false);
     }
 }
 

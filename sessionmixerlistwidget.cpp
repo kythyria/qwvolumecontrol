@@ -24,6 +24,7 @@ SessionMixerListWidget::SessionMixerListWidget(IAudioSessionManager2Ptr smgr)
     stuff = std::make_unique<Internal>();
     stuff->sessionSource = new SessionCreationSource(smgr, this);
     stuff->list = new QVBoxLayout();
+    stuff->list->setContentsMargins(0,0,0,9);
     stuff->list->addStretch(1);
     this->setLayout(stuff->list);
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);

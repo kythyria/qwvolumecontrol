@@ -39,7 +39,6 @@ public:
     QLabel *lblDeviceDesc;
     QLabel *lblStatus;
     
-    QPushButton *btnShowSessions;
     QPushButton *btnMute;
     QPushButton *btnLinkChannels;
     
@@ -54,7 +53,6 @@ DeviceMixerWidget::DeviceMixerWidget(QWidget *parent) : QFrame(parent) {
     stuff->InitHeaderWidgets();
     this->setLayout(stuff->vbox);
     this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    //this->setFrameShape(QFrame::Box);
     connect(stuff->cbxDeviceName, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DeviceMixerWidget::selectedIndexChanged_internal);
 }
 
@@ -76,16 +74,19 @@ DeviceMixerWidget::~DeviceMixerWidget() {
 
 void DeviceMixerWidget::Internals::InitHeaderWidgets() {
     cbxDeviceName = new QComboBox();
-    lblDeviceDesc = new QLabel("Device Description");
-    lblDeviceName = new QLabel("(Unknown Device)");
-    //lblStatus = new QLabel("");//("Status");
+    lblDeviceDesc = new QLabel("(Description)");
+    lblDeviceName = new QLabel("(Unknown)");
+    
+    cbxDeviceName->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    lblDeviceName->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+    lblDeviceDesc->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
     
     headerTextLayout = new QVBoxLayout();
     headerTextLayout->addWidget(cbxDeviceName);
     cbxDeviceName->hide();
     headerTextLayout->addWidget(lblDeviceName);
     headerTextLayout->addWidget(lblDeviceDesc);
-    //headerTextLayout->addWidget(lblStatus);
+    headerTextLayout->addStretch(1);
     
     QFrame *iconWidgetFrame = new QFrame();
     iconWidgetFrame->setFrameStyle(QFrame::Box);
@@ -95,7 +96,6 @@ void DeviceMixerWidget::Internals::InitHeaderWidgets() {
     iconWidgetFrame->resize(48,48);
     iconWidget = iconWidgetFrame;
     
-    btnShowSessions = new QPushButton("Details");
     btnMute = new QPushButton(QString::fromWCharArray(L"\uE198")); // mute icon
     btnMute->setFont(QFont("Segoe UI Symbol"));
     btnMute->setCheckable(true);
@@ -106,7 +106,6 @@ void DeviceMixerWidget::Internals::InitHeaderWidgets() {
     headerLayout->addWidget(iconWidget);
     headerLayout->addLayout(headerTextLayout, 1);
     headerLayout->addWidget(btnLinkChannels, 0, Qt::AlignTop);
-    headerLayout->addWidget(btnShowSessions, 0, Qt::AlignTop);
     headerLayout->addWidget(btnMute, 0, Qt::AlignTop);
     
     vbox = new QVBoxLayout();
@@ -133,7 +132,6 @@ void DeviceMixerWidget::setModel(QSharedPointer<AbstractVolumeModel> newModel) {
         connect(stuff->btnMute, &QPushButton::clicked, stuff->dvm.data(), &AbstractVolumeModel::setMuted);
         
         connect(stuff->dvm.data(), &AbstractVolumeModel::muteChanged, this, &DeviceMixerWidget::muteClicked);
-        connect(stuff->btnShowSessions, &QPushButton::clicked, this, &DeviceMixerWidget::detailButtonClicked);
     }
 }
 

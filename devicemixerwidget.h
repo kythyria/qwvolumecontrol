@@ -35,7 +35,6 @@ public:
     void clearSelectorModel();
     
 signals:
-    void detailButtonClicked();
     void selectedIndexChanged(int index);
     
 private slots:
