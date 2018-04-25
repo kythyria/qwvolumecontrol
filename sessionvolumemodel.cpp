@@ -45,9 +45,12 @@ SessionVolumeModel::SessionVolumeModel(IAudioSessionControl2Ptr session, QObject
         stuff->volume = nullptr;
         DBG_PRINT << "Unable to get volume control for session (" << hr << ")";
     }
+    
+    stuff->session->RegisterAudioSessionNotification(stuff);
 }
 
 SessionVolumeModel::~SessionVolumeModel() {
+    stuff->session->UnregisterAudioSessionNotification(stuff);
     stuff->Release();
 }
 
@@ -55,13 +58,9 @@ SessionVolumeModel::Internal::Internal(IAudioSessionControl2Ptr session, Session
     refcount(1),
     session(session),
     model(model)
-{
-    session->RegisterAudioSessionNotification(this);
-}
+{ }
 
-SessionVolumeModel::Internal::~Internal() {
-    session->UnregisterAudioSessionNotification(this);
-}
+SessionVolumeModel::Internal::~Internal() { }
 
 COM_IMPL_REFCOUNT(SessionVolumeModel::Internal)
 COM_IMPL_QUERYINTERFACE(SessionVolumeModel::Internal,
@@ -103,8 +102,10 @@ HRESULT SessionVolumeModel::Internal::OnSessionDisconnected(AudioSessionDisconne
 
 HRESULT SessionVolumeModel::Internal::OnSimpleVolumeChanged(float NewVolume, BOOL NewMute, LPCGUID EventContext) {
     (void)EventContext;
-    DEFER_EMIT(model, muteChanged, Q_ARG(bool, NewMute));
-    DEFER_EMIT(model, volumeChanged, Q_ARG(float, NewVolume));
+    model->metaObject()->invokeMethod(model, "muteChanged", Q_ARG(bool, NewMute));
+    model->metaObject()->invokeMethod(model, "volumeChanged", Q_ARG(float, NewVolume));
+    //DEFER_EMIT(model, muteChanged, Q_ARG(bool, NewMute));
+    //DEFER_EMIT(model, volumeChanged, Q_ARG(float, NewVolume));
     return S_OK;
 }
 
