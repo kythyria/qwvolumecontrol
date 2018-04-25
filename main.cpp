@@ -1,5 +1,4 @@
 #include <QApplication>
-#include <QQmlApplicationEngine>
 #include <QFile>
 #include <objbase.h>
 
@@ -19,9 +18,6 @@ int main(int argc, char *argv[]) {
     
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication app(argc, argv);
-    
-    /*QQmlApplicationEngine engine;
-    engine.load(QUrl(QLatin1String("qrc:/main.qml")));*/
     
     QFile styleFile( ":/appstyle.qss" );
     styleFile.open( QFile::ReadOnly );

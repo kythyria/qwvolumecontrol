@@ -1,2 +1,2 @@
-QScrollArea { background: transparent; border: none; }
+QScrollArea { background: transparent; }
 QScrollArea > .QWidget > DeviceMixerListWidget { background: transparent; }
