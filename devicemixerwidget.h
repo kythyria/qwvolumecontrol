@@ -2,6 +2,7 @@
 #define DEVICEMIXERWIDGET_H
 
 #include <QWidget>
+#include <QFrame>
 #include <memory>
 
 #include <mmdeviceapi.h>
@@ -11,7 +12,7 @@
 COM_SMARTPTR(IMMDevice);
 class QAbstractItemModel;
 
-class DeviceMixerWidget : public QWidget
+class DeviceMixerWidget : public QFrame
 {
     Q_OBJECT
     

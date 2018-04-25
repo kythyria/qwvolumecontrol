@@ -48,13 +48,14 @@ public:
     void InitHeaderWidgets();
 };
 
-DeviceMixerWidget::DeviceMixerWidget(QWidget *parent) : QWidget(parent) {
+DeviceMixerWidget::DeviceMixerWidget(QWidget *parent) : QFrame(parent) {
     stuff = new Internals();
     stuff->selectorModel = nullptr;
     stuff->InitHeaderWidgets();
     this->setLayout(stuff->vbox);
+    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    //this->setFrameShape(QFrame::Box);
     connect(stuff->cbxDeviceName, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DeviceMixerWidget::selectedIndexChanged_internal);
-    
 }
 
 DeviceMixerWidget::DeviceMixerWidget(QSharedPointer<AbstractVolumeModel> device, QWidget *parent) :
@@ -77,14 +78,14 @@ void DeviceMixerWidget::Internals::InitHeaderWidgets() {
     cbxDeviceName = new QComboBox();
     lblDeviceDesc = new QLabel("Device Description");
     lblDeviceName = new QLabel("(Unknown Device)");
-    lblStatus = new QLabel("");//("Status");
+    //lblStatus = new QLabel("");//("Status");
     
     headerTextLayout = new QVBoxLayout();
     headerTextLayout->addWidget(cbxDeviceName);
     cbxDeviceName->hide();
     headerTextLayout->addWidget(lblDeviceName);
     headerTextLayout->addWidget(lblDeviceDesc);
-    headerTextLayout->addWidget(lblStatus);
+    //headerTextLayout->addWidget(lblStatus);
     
     QFrame *iconWidgetFrame = new QFrame();
     iconWidgetFrame->setFrameStyle(QFrame::Box);
