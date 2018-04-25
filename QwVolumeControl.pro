@@ -4,7 +4,6 @@ CONFIG += c++11
 
 SOURCES += main.cpp \
     volmainwindow.cpp \
-    devicemixerlistwidget.cpp \
     devicemixerwidget.cpp \
     util.cpp \
     abstractvolumemodel.cpp \
@@ -32,7 +31,6 @@ include(deployment.pri)
 
 HEADERS += \
     volmainwindow.h \
-    devicemixerlistwidget.h \
     devicemixerwidget.h \
     util.h \
     abstractvolumemodel.h \

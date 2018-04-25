@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <mmdeviceapi.h>
 
-#include "devicemixerlistwidget.h"
 #include "devicemixerbankwidget.h"
 #include "devicecollectionmodel.h"
 #include "util.h"
@@ -14,6 +13,7 @@
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 
+COM_SMARTPTR(IMMDeviceCollection);
 COM_SMARTPTR(IMMDeviceEnumerator);
 //_COM_SMARTPTR_TYPEDEF(IMMDeviceCollection, __uuidof(IMMDeviceCollection));
 
@@ -21,29 +21,24 @@ class VolMainWindow_internal {
 public:
     VolMainWindow *self;
     QTabWidget *tabs;
-    //QScrollArea *playbackPage;
     DeviceMixerBankWidget *playbackPage;
-    QScrollArea *recordingPage;
+    DeviceMixerBankWidget *recordingPage;
     QScrollArea *deviceDetailPage;
     QWidget *optionPage;
     
     IMMDeviceEnumeratorPtr devenum;
     
     DeviceCollectionModel *playbackDevices;
+    DeviceCollectionModel *recordingDevices;
     
     VolMainWindow_internal(VolMainWindow *window);
 };
 
 VolMainWindow_internal::VolMainWindow_internal(VolMainWindow *window) {
-    
-    recordingPage    = new QScrollArea();
-    recordingPage->setWidgetResizable(true);
-    
     deviceDetailPage = new QScrollArea();
     optionPage       = new QWidget();
     
     tabs = new QTabWidget();
-    tabs->addTab(recordingPage, "Recording");
     tabs->addTab(deviceDetailPage, "Device Details");
     tabs->addTab(optionPage, "Options");
     
@@ -66,12 +61,13 @@ VolMainWindow::VolMainWindow(QWidget *parent) : QMainWindow(parent) {
     
     stuff->playbackDevices = new DeviceCollectionModel(stuff->devenum, eRender, DEVICE_STATE_ACTIVE);
     stuff->playbackPage = new DeviceMixerBankWidget(stuff->playbackDevices);
-    stuff->tabs->addTab(stuff->playbackPage, "Playback");
+    stuff->tabs->insertTab(0, stuff->playbackPage, "Playback");
     
-    hr = stuff->devenum->EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE, &col);
-    assertHR(hr, "Couldn't enumerate input devices (%0)");
+    stuff->recordingDevices = new DeviceCollectionModel(stuff->devenum, eCapture, DEVICE_STATE_ACTIVE);
+    stuff->recordingPage = new DeviceMixerBankWidget(stuff->recordingDevices);
+    stuff->tabs->insertTab(1,stuff->recordingPage, "Recording");
     
-    stuff->recordingPage->setWidget(new DeviceMixerListWidget(col));
+    stuff->tabs->setCurrentIndex(0);
 }
 
 VolMainWindow::~VolMainWindow() { }
